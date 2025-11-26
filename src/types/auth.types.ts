@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   fullName: string
+  avatar?: string
   isVerified: boolean
   createdAt: string
   updatedAt: string
@@ -26,6 +27,7 @@ export interface UserResponse {
   id: string
   email: string
   full_name: string
+  avatar?: string
   is_verified: boolean
   created_at: string
   updated_at: string
@@ -59,18 +61,23 @@ export interface ResendCodeData {
 }
 
 export interface AuthResponse {
-  success: boolean
-  message: string
+  meta: {
+    code: string
+    type: string
+    message: string
+  }
   data: {
     id?: string
     email: string
     full_name: string
+    avatar?: string
     is_verified?: boolean
     created_at?: string
     updated_at?: string
     access_token: string
   }
 }
+
 
 export interface AuthResponseNested {
   success: boolean

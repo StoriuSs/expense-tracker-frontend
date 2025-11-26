@@ -1,6 +1,13 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9000/api/v1'
 
 export const API_ENDPOINTS = {
+  // User endpoints
+  USERS: {
+    ME: '/users/me',
+    AVATAR: '/users/me/avatar',
+    SETTINGS: '/users/settings',
+    SETTINGS_RESET: '/users/settings/reset',
+  },
   // Auth endpoints
   AUTH: {
     REGISTER: '/auth/register',
@@ -11,12 +18,7 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     RESEND_CODE: '/auth/resend-code',
-  },
-  // User endpoints
-  USERS: {
-    ME: '/users/me',
-    AVATAR: '/users/me/avatar',
-    SETTINGS: '/users/settings',
+    CHANGE_PASSWORD: '/auth/change-password',
   },
   // Feature endpoints
   EXPENSES: {

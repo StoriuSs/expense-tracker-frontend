@@ -5,6 +5,7 @@ import expensesReducer from './slices/expensesSlice'
 import budgetsReducer from './slices/budgetsSlice'
 import subscriptionsReducer from './slices/subscriptionsSlice'
 import statisticsReducer from './slices/statisticsSlice'
+import settingsReducer from './slices/settingsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
     expenses: expensesReducer,
     budgets: budgetsReducer,
     subscriptions: subscriptionsReducer,
-    statistics: statisticsReducer
+    statistics: statisticsReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
