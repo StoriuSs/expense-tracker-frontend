@@ -15,9 +15,10 @@ interface CategorySelectProps {
   onChange: (categoryId: string) => void
   error?: string
   disabled?: boolean
+  className?: string
 }
 
-const CategorySelect = ({ categories, value, onChange, error, disabled }: CategorySelectProps) => {
+const CategorySelect = ({ categories, value, onChange, error, disabled, className = '' }: CategorySelectProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -47,13 +48,13 @@ const CategorySelect = ({ categories, value, onChange, error, disabled }: Catego
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Selected value / Trigger button */}
       <button
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border-2 rounded-xl transition-all flex items-center justify-between ${
+        className={`w-full h-full px-4 border-2 rounded-xl transition-all flex items-center justify-between ${
           error 
             ? 'border-red-300 bg-red-50' 
             : isOpen

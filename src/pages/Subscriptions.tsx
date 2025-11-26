@@ -15,6 +15,7 @@ import SubscriptionCard from '../components/features/subscriptions/SubscriptionC
 import SubscriptionStats from '../components/features/subscriptions/SubscriptionStats'
 import Modal from '../components/common/Modal'
 import Pagination from '../components/common/Pagination'
+import CategorySelect from '../components/common/CategorySelect'
 import { 
   Subscription, 
   CreateSubscriptionData, 
@@ -43,21 +44,15 @@ const Subscriptions = () => {
   // Initial data fetch
   useEffect(() => {
     dispatch(fetchCategories())
-    dispatch(fetchSubscriptions({ limit: 100 })) // Fetch all for client-side filtering
+    dispatch(fetchSubscriptions({ limit: 100 }))
   }, [dispatch])
 
   // Apply filters and sorting
   const filteredSubscriptions = subscriptions
     .filter(sub => {
-      // Status filter
       if (activeStatusFilter !== 'all' && sub.status !== activeStatusFilter) return false
-      
-      // Search filter
       if (searchQuery && !sub.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
-      
-      // Category filter
       if (categoryFilter && sub.categoryId !== categoryFilter) return false
-      
       return true
     })
     .sort((a, b) => {
@@ -154,13 +149,8 @@ const Subscriptions = () => {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Subscriptions</h1>
-          <p className="text-gray-500">Manage your recurring payments</p>
-        </div>
-        
+      {/* Header with Action Button */}
+      <div className="flex justify-end">
         <button
           onClick={() => setShowCreateForm(true)}
           className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
@@ -201,9 +191,9 @@ const Subscriptions = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative md:col-span-2">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -213,26 +203,23 @@ const Subscriptions = () => {
                 setCurrentPage(1)
               }}
               placeholder="Search by name..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 pl-10 pr-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
             />
           </div>
 
           {/* Category Filter */}
-          <select
+          <CategorySelect
+            categories={[
+              { id: '', name: 'All Categories', color: 'gray' },
+              ...categories
+            ]}
             value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value)
+            onChange={(categoryId) => {
+              setCategoryFilter(categoryId)
               setCurrentPage(1)
             }}
-            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            className="h-10"
+          />
 
           {/* Sort */}
           <select
@@ -242,7 +229,7 @@ const Subscriptions = () => {
               setSortBy(newSortBy)
               setSortOrder(newSortOrder as 'asc' | 'desc')
             }}
-            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-4 h-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white w-full"
           >
             <option value="nextPaymentDate__asc">Next Payment (Soonest)</option>
             <option value="nextPaymentDate__desc">Next Payment (Latest)</option>

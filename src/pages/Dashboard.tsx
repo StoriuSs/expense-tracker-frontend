@@ -4,9 +4,10 @@ import { AppDispatch, RootState } from '../store'
 import { fetchSummary, fetchTrend, fetchBudgetHealth } from '../store/slices/statisticsSlice'
 import { fetchSubscriptions } from '../store/slices/subscriptionsSlice'
 import { fetchCategories } from '../store/slices/categoriesSlice'
-import { startOfMonth, endOfMonth, subDays, format } from 'date-fns'
+import { subDays, format } from 'date-fns'
 import { Wallet, Calendar, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getDateRangePresets } from '../utils/dateRangeUtils'
 
 import SummaryCard from '../components/features/reports/SummaryCard'
 import MiniTrendChart from '../components/features/dashboard/MiniTrendChart'
@@ -28,15 +29,15 @@ const Dashboard = () => {
     else if (hour < 18) setGreeting('Good afternoon')
     else setGreeting('Good evening')
 
-    // Fetch initial data
-    const now = new Date()
-    const startMonth = startOfMonth(now).toISOString()
-    const endMonth = endOfMonth(now).toISOString()
-    const last30DaysStart = subDays(now, 30).toISOString()
+    // Fetch initial data using date range presets
+    const presets = getDateRangePresets()
+    const thisMonth = presets.this_month()
+    const last30DaysStart = subDays(new Date(), 30).toISOString().split('T')[0]
+    const today = new Date().toISOString().split('T')[0]
 
     dispatch(fetchCategories())
-    dispatch(fetchSummary({ startDate: startMonth, endDate: endMonth }))
-    dispatch(fetchTrend({ startDate: last30DaysStart, endDate: now.toISOString(), granularity: 'day' }))
+    dispatch(fetchSummary({ startDate: thisMonth.startDate, endDate: thisMonth.endDate }))
+    dispatch(fetchTrend({ startDate: last30DaysStart, endDate: today, granularity: 'day' }))
     dispatch(fetchBudgetHealth())
     dispatch(fetchSubscriptions())
   }, [dispatch])

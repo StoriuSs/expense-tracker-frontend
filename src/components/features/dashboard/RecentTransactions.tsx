@@ -47,8 +47,8 @@ const RecentTransactions = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6 shrink-0">
+    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900">Recent Transactions</h3>
         <Link 
           to="/expenses" 
@@ -59,12 +59,12 @@ const RecentTransactions = () => {
       </div>
 
       {expenses.length === 0 ? (
-        <div className="text-center py-10 flex-1 flex flex-col justify-center">
+        <div className="text-center py-10">
           <Receipt size={32} className="text-gray-300 mx-auto mb-2" />
           <p className="text-gray-500">No transactions yet</p>
         </div>
       ) : (
-        <div className="space-y-4 flex-1 overflow-y-auto pr-2 min-h-0">
+        <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2">
           {expenses.map((expense) => {
             const categoryName = getCategoryName(expense.categoryId)
             const categoryColor = getCategoryColor(expense.categoryId)
