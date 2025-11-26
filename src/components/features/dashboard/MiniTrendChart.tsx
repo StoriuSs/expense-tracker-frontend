@@ -1,4 +1,4 @@
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts'
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { TrendDataPoint } from '../../../types'
 import { Loader2 } from 'lucide-react'
 
@@ -40,20 +40,29 @@ const MiniTrendChart = ({ data, loading }: MiniTrendChartProps) => {
                 <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
               </linearGradient>
             </defs>
+            <XAxis dataKey="date" hide />
             <Tooltip 
               contentStyle={{
                 backgroundColor: '#fff',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 fontSize: '12px',
-                padding: '4px 8px'
+                padding: '8px 12px'
               }}
               formatter={(value: number) => [`$${value.toFixed(2)}`, 'Spent']}
-              labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              labelFormatter={(label) => {
+                try {
+                  const date = new Date(label)
+                  if (isNaN(date.getTime())) return label
+                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                } catch {
+                  return label
+                }
+              }}
             />
             <Area 
               type="monotone" 
-              dataKey="amount" 
+              dataKey="amount"
               stroke="#6366f1" 
               strokeWidth={2}
               fillOpacity={1} 

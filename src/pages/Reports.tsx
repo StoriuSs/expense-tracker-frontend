@@ -22,7 +22,7 @@ const Reports = () => {
   )
 
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' })
-  const [granularity, setGranularity] = useState<'month' | 'day'>('month')
+  const [granularity, setGranularity] = useState<'month' | 'day'>('day')
 
   // Initialize with This Month
   useEffect(() => {
@@ -30,12 +30,12 @@ const Reports = () => {
     const thisMonth = presets.this_month()
     setDateRange({ startDate: thisMonth.startDate, endDate: thisMonth.endDate })
     
-    // Fetch all data with this month
+    // Fetch all data with this month and daily granularity
     fetchAllData(thisMonth.startDate, thisMonth.endDate)
   }, [])
 
   const fetchAllData = (startDate: string, endDate: string) => {
-    dispatch(fetchTrend({ startDate, endDate, granularity }))
+    dispatch(fetchTrend({ startDate, endDate, granularity: 'day' }))
     dispatch(fetchCategoryBreakdown({ startDate, endDate }))
     dispatch(fetchSummary({ startDate, endDate }))
     dispatch(fetchTopExpenses({ startDate, endDate, limit: 10 }))
@@ -59,12 +59,6 @@ const Reports = () => {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-        <p className="text-gray-500">Analyze your spending patterns</p>
-      </div>
-
       {/* Date Range Selector */}
       <DateRangeSelector onRangeChange={handleDateRangeChange} />
 
