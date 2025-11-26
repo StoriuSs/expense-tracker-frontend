@@ -84,8 +84,12 @@ const Sidebar = () => {
       {/* User Profile & Logout */}
       <div className="p-4 border-t border-gray-50 bg-gray-50/50">
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-gray-100 shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-white shadow-sm">
-            {user?.fullName?.[0]?.toUpperCase() || 'U'}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-white shadow-sm overflow-hidden">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+            ) : (
+              user?.fullName?.[0]?.toUpperCase() || 'U'
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 truncate">

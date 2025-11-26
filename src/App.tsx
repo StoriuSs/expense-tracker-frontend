@@ -22,6 +22,13 @@ import Expenses from './pages/Expenses'
 import Budgets from './pages/Budgets'
 import Subscriptions from './pages/Subscriptions'
 import Reports from './pages/Reports'
+import Settings from './pages/Settings'
+
+// Settings Pages
+import ProfileSettings from './components/features/settings/ProfileSettings'
+import PreferencesSettings from './components/features/settings/PreferencesSettings'
+import NotificationSettings from './components/features/settings/NotificationSettings'
+import SecuritySettings from './components/features/settings/SecuritySettings'
 
 
 // Route Guards
@@ -66,6 +73,16 @@ function App() {
           <Route path="/budgets" element={<Budgets />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/reports" element={<Reports />} />
+          
+          {/* Settings Routes */}
+          <Route path="/settings" element={<Settings />}>
+            <Route index element={<Navigate to="/settings/profile" replace />} />
+            <Route path="profile" element={<ProfileSettings />} />
+            <Route path="preferences" element={<PreferencesSettings />} />
+            <Route path="notifications" element={<NotificationSettings />} />
+            <Route path="security" element={<SecuritySettings />} />
+          </Route>
+          
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

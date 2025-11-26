@@ -44,6 +44,16 @@ export const register = createAsyncThunk(
   }
 )
 
+// Helper to convert avatar path to full URL
+const getAvatarUrl = (avatarPath: string | null | undefined): string | undefined => {
+  if (!avatarPath) return undefined
+  if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+    return avatarPath
+  }
+  const baseUrl = 'http://localhost:9000'
+  return `${baseUrl}/${avatarPath}`
+}
+
 export const verify = createAsyncThunk<
   { user: User; accessToken: string } | null,
   VerifyData,
@@ -63,6 +73,7 @@ export const verify = createAsyncThunk<
           id: response.data.id || '',
           email: response.data.email,
           fullName: response.data.full_name,
+          avatar: getAvatarUrl(response.data.avatar),
           isVerified: true, // User is verified after successful verification
           createdAt: response.data.created_at || new Date().toISOString(),
           updatedAt: response.data.updated_at || new Date().toISOString(),
@@ -100,6 +111,7 @@ export const login = createAsyncThunk<
         id: userResponse.id,
         email: userResponse.email,
         fullName: userResponse.full_name,
+        avatar: getAvatarUrl(userResponse.avatar),
         isVerified: userResponse.is_verified,
         createdAt: userResponse.created_at,
         updatedAt: userResponse.updated_at,
@@ -216,6 +228,9 @@ const authSlice = createSlice({
     },
     clearPendingVerification: (state) => {
       state.pendingVerification = null
+    },
+    updateUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -362,5 +377,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { clearError, setPendingVerification, clearPendingVerification } = authSlice.actions
+export const { clearError, setPendingVerification, clearPendingVerification, updateUser } = authSlice.actions
 export default authSlice.reducer

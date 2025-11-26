@@ -1,13 +1,24 @@
-const Settings = () => {
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account and preferences</p>
-      </div>
+import React, { useEffect } from 'react'
+import { Outlet } from 'react-router-dom'
+import Sidebar from '../components/features/settings/Sidebar'
+import { useAppDispatch } from '../hooks/useAppDispatch'
+import { fetchSettings } from '../store/slices/settingsSlice'
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-500">Settings page content coming soon...</p>
+const Settings: React.FC = () => {
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    dispatch(fetchSettings())
+  }, [dispatch])
+
+  return (
+    <div className="flex gap-6">
+      {/* Sidebar */}
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1">
+        <Outlet />
       </div>
     </div>
   )
