@@ -5,7 +5,7 @@ import { Loader2, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react'
 interface BudgetHealthListProps {
   data: BudgetHealth[]
   loading?: boolean
-}
+} 
 
 const BudgetHealthList = ({ data, loading }: BudgetHealthListProps) => {
   if (loading) {
