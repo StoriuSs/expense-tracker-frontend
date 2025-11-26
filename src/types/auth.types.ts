@@ -81,7 +81,7 @@ export interface AuthResponseNested {
   }
 }
 
-export interface ApiResponse<T = any> {
+export interface AuthApiResponse<T = any> {
   success: boolean
   message: string
   data: T

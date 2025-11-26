@@ -17,12 +17,12 @@ import ResetPassword from './pages/auth/ResetPassword'
 
 // Main Pages
 import Dashboard from './pages/Dashboard'
-import Expenses from './pages/Expenses'
 import Categories from './pages/Categories'
+import Expenses from './pages/Expenses'
 import Budgets from './pages/Budgets'
 import Subscriptions from './pages/Subscriptions'
 import Reports from './pages/Reports'
-import Settings from './pages/Settings'
+
 
 // Route Guards
 import PrivateRoute from './components/guards/PrivateRoute'
@@ -61,12 +61,11 @@ function App() {
       <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/expenses" element={<Expenses />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/expenses" element={<Expenses />} />
           <Route path="/budgets" element={<Budgets />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

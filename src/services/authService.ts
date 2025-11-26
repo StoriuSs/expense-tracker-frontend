@@ -8,12 +8,12 @@ import {
   ResendCodeData,
   AuthResponse,
   AuthResponseNested,
-  ApiResponse,
+  AuthApiResponse,
   User,
 } from '../types'
 
 class AuthService {
-  async register(data: RegisterData): Promise<ApiResponse> {
+  async register(data: RegisterData): Promise<AuthApiResponse> {
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.REGISTER, {
       email: data.email,
       password: data.password,
@@ -44,19 +44,19 @@ class AuthService {
     return response.data
   }
 
-  async logout(): Promise<ApiResponse> {
+  async logout(): Promise<AuthApiResponse> {
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT)
     return response.data
   }
 
-  async forgotPassword(email: string): Promise<ApiResponse> {
+  async forgotPassword(email: string): Promise<AuthApiResponse> {
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
       email,
     })
     return response.data
   }
 
-  async resetPassword(data: ResetPasswordData): Promise<ApiResponse> {
+  async resetPassword(data: ResetPasswordData): Promise<AuthApiResponse> {
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
       code: data.code,
       new_password: data.newPassword,
@@ -64,7 +64,7 @@ class AuthService {
     return response.data
   }
 
-  async resendCode(data: ResendCodeData): Promise<ApiResponse> {
+  async resendCode(data: ResendCodeData): Promise<AuthApiResponse> {
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.RESEND_CODE, {
       email: data.email,
       type: data.type,
