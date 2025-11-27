@@ -86,9 +86,9 @@ const RecentTransactions = () => {
                       ${expense.amount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{categoryName}</span>
-                    <span>{format(new Date(expense.timestamp), 'MMM d, h:mm a')}</span>
+                  <div className="flex items-center justify-between text-xs text-gray-500 gap-2">
+                    <span className="truncate" title={categoryName}>{categoryName}</span>
+                    <span className="shrink-0">{format(new Date(expense.timestamp), 'MMM d, h:mm a')}</span>
                   </div>
                 </div>
               </div>

@@ -35,7 +35,12 @@ const BudgetExpensesModal = ({ isOpen, onClose, period, category }: BudgetExpens
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`${category?.name || 'Budget'} Expenses`}
+      title={
+        <div className="flex items-center min-w-0">
+          <span className="truncate" title={category?.name}>{category?.name || 'Budget'}</span>
+          <span className="whitespace-nowrap ml-1">Expenses</span>
+        </div>
+      }
     >
       <div className="space-y-4">
         {/* Header Info */}

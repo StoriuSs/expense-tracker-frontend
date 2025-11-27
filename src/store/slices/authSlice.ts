@@ -11,23 +11,10 @@ import {
   User,
   UserResponse,
 } from '../../types'
+import { getApiErrorMessage } from '../../utils/errorUtils'
 
 // Define error type matching backend response structure
-interface ApiError {
-  response?: {
-    data?: {
-      meta?: {
-        code?: string
-        type?: string
-        message?: string
-        timestamp?: string
-        request_id?: string
-        request_duration?: number
-      }
-      data?: any
-    }
-  }
-}
+
 
 // Async thunks
 export const register = createAsyncThunk(
@@ -37,8 +24,7 @@ export const register = createAsyncThunk(
       const response = await authService.register(userData)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Registration failed'
+      const message = getApiErrorMessage(error, 'Registration failed')
       return rejectWithValue(message)
     }
   }
@@ -68,15 +54,20 @@ export const verify = createAsyncThunk<
       if (response.data?.access_token) {
         authService.setAccessToken(response.data.access_token)
         
-        // Handle flat response structure (user data is in response.data directly, not nested)
+        // Fetch full user profile to ensure we have all details (like fullName)
+        const profileResponse = await authService.getProfile()
+        // Handle potential nested user object (e.g. data.user)
+        const profileData = profileResponse.data as any
+        const userResponse = profileData.user || profileData
+
         const user: User = {
-          id: response.data.id || '',
-          email: response.data.email,
-          fullName: response.data.full_name,
-          avatar: getAvatarUrl(response.data.avatar),
-          isVerified: true, // User is verified after successful verification
-          createdAt: response.data.created_at || new Date().toISOString(),
-          updatedAt: response.data.updated_at || new Date().toISOString(),
+          id: userResponse.id,
+          email: userResponse.email,
+          fullName: userResponse.full_name,
+          avatar: getAvatarUrl(userResponse.avatar),
+          isVerified: userResponse.is_verified,
+          createdAt: userResponse.created_at,
+          updatedAt: userResponse.updated_at,
         }
         authService.setUser(user)
         
@@ -86,8 +77,7 @@ export const verify = createAsyncThunk<
       // For forgot password verification
       return null
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Verification failed'
+      const message = getApiErrorMessage(error, 'Verification failed')
       return rejectWithValue(message)
     }
   }
@@ -123,9 +113,7 @@ export const login = createAsyncThunk<
         accessToken: response.data.access_token,
       }
     } catch (error) {
-      const apiError = error as ApiError
-      // Backend returns: { meta: { message: "..." }, data: {...} }
-      const message = apiError.response?.data?.meta?.message || 'Invalid email or password'
+      const message = getApiErrorMessage(error, 'Invalid email or password')
       return rejectWithValue(message)
     }
   }
@@ -153,8 +141,7 @@ export const forgotPassword = createAsyncThunk(
       const response = await authService.forgotPassword(email)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Request failed'
+      const message = getApiErrorMessage(error, 'Request failed')
       return rejectWithValue(message)
     }
   }
@@ -167,8 +154,7 @@ export const resetPassword = createAsyncThunk(
       const response = await authService.resetPassword(data)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Password reset failed'
+      const message = getApiErrorMessage(error, 'Password reset failed')
       return rejectWithValue(message)
     }
   }
@@ -181,8 +167,7 @@ export const resendCode = createAsyncThunk(
       const response = await authService.resendCode(data)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Failed to resend code'
+      const message = getApiErrorMessage(error, 'Failed to resend code')
       return rejectWithValue(message)
     }
   }
@@ -195,13 +180,46 @@ export const restoreAuth = createAsyncThunk<
   async () => {
     try {
       const token = authService.getAccessToken()
-      const user = authService.getUser()
+      if (!token) return null
+
+      // Verify token validity and get fresh user data
+      const response = await authService.getProfile()
+      // Handle potential nested user object (e.g. data.user)
+      const profileData = response.data as any
+      const userResponse = profileData.user || profileData
       
-      if (token && user) {
+      const user: User = {
+          id: userResponse.id,
+          email: userResponse.email,
+          fullName: userResponse.full_name,
+          avatar: getAvatarUrl(userResponse.avatar),
+          isVerified: userResponse.is_verified,
+          createdAt: userResponse.created_at,
+          updatedAt: userResponse.updated_at,
+      }
+      
+      // Update local storage with fresh data
+      authService.setUser(user)
+      
+      return { user, accessToken: token }
+    } catch (error: any) {
+      // If error is 401 (Unauthorized), clear auth
+      if (error.response?.status === 401) {
+        authService.clearAuth()
+        return null
+      }
+
+      // For other errors (e.g. 500, network error), try to restore from local storage
+      // This prevents logging out the user due to temporary server issues
+      const user = authService.getUser()
+      const token = authService.getAccessToken()
+      
+      if (user && token) {
         return { user, accessToken: token }
       }
-      return null
-    } catch (error) {
+
+      // If no local data, clear auth
+      authService.clearAuth()
       return null
     }
   }

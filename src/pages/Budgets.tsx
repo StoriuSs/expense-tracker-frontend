@@ -35,7 +35,6 @@ const Budgets = () => {
   const { 
     templates, 
     periods, 
-    loading, 
     periodsLoading,
     operationLoading 
   } = useSelector((state: RootState) => state.budgets)
@@ -89,6 +88,11 @@ const Budgets = () => {
     loadPeriods()
   }, [dispatch, selectedMonth, templates.length, activeTab])
 
+  // Reset pagination when month changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedMonth])
+
   const handleMonthChange = (increment: number) => {
     const [year, month] = historyMonth.split('-').map(Number)
     const date = new Date(year, month - 1 + increment, 1)
@@ -106,8 +110,9 @@ const Budgets = () => {
       if (activeTab === 'current') {
         dispatch(fetchPeriods({ month: currentMonth }))
       }
-    } catch (error) {
-      toast.error('Failed to create budget template')
+    } catch (error: any) {
+      console.error('Failed to create budget template:', error)
+      toast.error(typeof error === 'string' ? error : 'Failed to create budget template')
     }
   }
 
@@ -121,19 +126,21 @@ const Budgets = () => {
       if (activeTab === 'current') {
         dispatch(fetchPeriods({ month: currentMonth }))
       }
-    } catch (error) {
-      toast.error('Failed to update budget template')
+    } catch (error: any) {
+      console.error('Failed to update budget template:', error)
+      toast.error(typeof error === 'string' ? error : 'Failed to update budget template')
     }
   }
 
   const handleDeleteTemplate = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this budget template? Existing periods will remain.')) {
+    if (window.confirm('Are you sure you want to delete this budget template? The budget for the CURRENT month will be removed, but past history will remain.')) {
       try {
         await dispatch(deleteTemplate(id)).unwrap()
         toast.success('Budget template deleted')
         dispatch(fetchTemplates())
-      } catch (error) {
-        toast.error('Failed to delete budget template')
+      } catch (error: any) {
+        console.error('Failed to delete budget template:', error)
+        toast.error(typeof error === 'string' ? error : 'Failed to delete budget template')
       }
     }
   }
@@ -143,8 +150,6 @@ const Budgets = () => {
       dispatch(fetchCurrentMonthSummary()) // This fetches summary from backend cache
     }
   }, [dispatch, activeTab, periods]) // Refresh summary when periods change
-
-  const { currentMonthSummary } = useSelector((state: RootState) => state.budgets)
   
   const totalBudget = periods.reduce((sum, p) => sum + p.periodAmount, 0)
   const totalSpent = periods.reduce((sum, p) => sum + p.spentAmount, 0)
@@ -392,20 +397,20 @@ const Budgets = () => {
                     
                     return (
                       <div key={template.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-xl ${category ? `${categoryStyles.bg} ${categoryStyles.text}` : 'bg-gray-100 text-gray-500'} flex items-center justify-center`}>
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className={`w-10 h-10 rounded-xl ${category ? `${categoryStyles.bg} ${categoryStyles.text}` : 'bg-gray-100 text-gray-500'} flex items-center justify-center shrink-0`}>
                             <Icon size={20} />
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-gray-900">{category?.name || 'Unknown Category'}</h4>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <h4 className="font-bold text-gray-900 truncate" title={category?.name || 'Unknown Category'}>{category?.name || 'Unknown Category'}</h4>
                               {!template.active && (
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full">
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full shrink-0">
                                   Inactive
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 truncate">
                               ${template.monthlyAmount.toLocaleString()} / month • Alert at {template.alertThreshold}%
                             </p>
                           </div>

@@ -24,6 +24,8 @@ import {
 } from '../types'
 import toast from 'react-hot-toast'
 
+import { useDebounce } from '../hooks/useDebounce'
+
 const Subscriptions = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { items: subscriptions, loading, operationLoading, pagination } = useSelector((state: RootState) => state.subscriptions)
@@ -35,66 +37,51 @@ const Subscriptions = () => {
   // Filters
   const [activeStatusFilter, setActiveStatusFilter] = useState<'all' | SubscriptionStatus>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearchQuery = useDebounce(searchQuery, 500) // Debounce search query
+  
   const [categoryFilter, setCategoryFilter] = useState('')
   const [sortBy, setSortBy] = useState('nextPaymentDate')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6
+  const ITEMS_PER_PAGE = 6
 
-  // Initial data fetch
+  // Fetch data with server-side params
+  const loadSubscriptions = () => {
+    dispatch(fetchSubscriptions({ 
+      page: currentPage,
+      limit: ITEMS_PER_PAGE,
+      status: activeStatusFilter === 'all' ? undefined : activeStatusFilter,
+      search: debouncedSearchQuery || undefined, // Use debounced query
+      categoryId: categoryFilter || undefined,
+      sortBy,
+      sortOrder
+    }))
+  }
+
+  // Initial data fetch and when filters/page change
+  useEffect(() => {
+    loadSubscriptions()
+  }, [dispatch, currentPage, activeStatusFilter, categoryFilter, sortBy, sortOrder, debouncedSearchQuery]) // Add debouncedSearchQuery to dependencies
+
+  // Fetch categories on mount
   useEffect(() => {
     dispatch(fetchCategories())
-    dispatch(fetchSubscriptions({ limit: 100 }))
   }, [dispatch])
 
-  // Apply filters and sorting
-  const filteredSubscriptions = subscriptions
-    .filter(sub => {
-      if (activeStatusFilter !== 'all' && sub.status !== activeStatusFilter) return false
-      if (searchQuery && !sub.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
-      if (categoryFilter && sub.categoryId !== categoryFilter) return false
-      return true
-    })
-    .sort((a, b) => {
-      let compareA: any, compareB: any
-      
-      switch (sortBy) {
-        case 'nextPaymentDate':
-          compareA = new Date(a.nextPaymentDate).getTime()
-          compareB = new Date(b.nextPaymentDate).getTime()
-          break
-        case 'amount':
-          compareA = a.amount
-          compareB = b.amount
-          break
-        case 'name':
-          compareA = a.name.toLowerCase()
-          compareB = b.name.toLowerCase()
-          break
-        default:
-          return 0
-      }
-      
-      return sortOrder === 'asc' 
-        ? compareA > compareB ? 1 : -1
-        : compareA < compareB ? 1 : -1
-    })
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentSubscriptions = filteredSubscriptions.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredSubscriptions.length / itemsPerPage)
-
   // Handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const handleCreateSubscription = async (data: CreateSubscriptionData | UpdateSubscriptionData) => {
     try {
       await dispatch(createSubscription(data as CreateSubscriptionData)).unwrap()
       toast.success('Subscription created successfully')
       setShowCreateForm(false)
-      dispatch(fetchSubscriptions({ limit: 100 }))
-    } catch (error) {
-      toast.error('Failed to create subscription')
+      loadSubscriptions()
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : (error.message || 'Failed to create subscription'))
     }
   }
 
@@ -104,9 +91,9 @@ const Subscriptions = () => {
       await dispatch(updateSubscription({ id: editingSubscription.id, data })).unwrap()
       toast.success('Subscription updated successfully')
       setEditingSubscription(null)
-      dispatch(fetchSubscriptions({ limit: 100 }))
-    } catch (error) {
-      toast.error('Failed to update subscription')
+      loadSubscriptions()
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : (error.message || 'Failed to update subscription'))
     }
   }
 
@@ -115,9 +102,9 @@ const Subscriptions = () => {
       try {
         await dispatch(deleteSubscription(id)).unwrap()
         toast.success('Subscription deleted')
-        dispatch(fetchSubscriptions({ limit: 100 }))
-      } catch (error) {
-        toast.error('Failed to delete subscription')
+        loadSubscriptions()
+      } catch (error: any) {
+        toast.error(typeof error === 'string' ? error : (error.message || 'Failed to delete subscription'))
       }
     }
   }
@@ -130,9 +117,9 @@ const Subscriptions = () => {
       try {
         await dispatch(processPayment(id)).unwrap()
         toast.success('Payment processed successfully')
-        dispatch(fetchSubscriptions({ limit: 100 }))
-      } catch (error) {
-        toast.error('Failed to process payment')
+        loadSubscriptions()
+      } catch (error: any) {
+        toast.error(typeof error === 'string' ? error : (error.message || 'Failed to process payment'))
       }
     }
   }
@@ -141,9 +128,9 @@ const Subscriptions = () => {
     try {
       await dispatch(updateSubscription({ id, data: { status } })).unwrap()
       toast.success(`Subscription ${status.toLowerCase()}`)
-      dispatch(fetchSubscriptions({ limit: 100 }))
-    } catch (error) {
-      toast.error('Failed to update subscription status')
+      loadSubscriptions()
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : (error.message || 'Failed to update subscription status'))
     }
   }
 
@@ -160,7 +147,7 @@ const Subscriptions = () => {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Stats - Note: Stats might need a separate endpoint if they should reflect ALL data, not just paginated */}
       <SubscriptionStats subscriptions={subscriptions} />
 
       {/* Filters */}
@@ -200,7 +187,7 @@ const Subscriptions = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
-                setCurrentPage(1)
+                setCurrentPage(1) // Reset page on search input
               }}
               placeholder="Search by name..."
               className="w-full h-10 pl-10 pr-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
@@ -228,6 +215,7 @@ const Subscriptions = () => {
               const [newSortBy, newSortOrder] = e.target.value.split('__')
               setSortBy(newSortBy)
               setSortOrder(newSortOrder as 'asc' | 'desc')
+              setCurrentPage(1)
             }}
             className="px-4 h-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white w-full"
           >
@@ -242,17 +230,17 @@ const Subscriptions = () => {
       </div>
 
       {/* Subscriptions Grid */}
-      {loading ? (
+      {loading && subscriptions.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
             <p className="text-gray-500">Loading subscriptions...</p>
           </div>
         </div>
-      ) : currentSubscriptions.length > 0 ? (
+      ) : subscriptions.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentSubscriptions.map((subscription) => {
+            {subscriptions.map((subscription) => {
               const category = categories.find(c => c.id === subscription.categoryId)
               return (
                 <SubscriptionCard
@@ -268,13 +256,13 @@ const Subscriptions = () => {
             })}
           </div>
           
-          {totalPages > 1 && (
+          {pagination && pagination.totalPages > 1 && (
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              hasNextPage={currentPage < totalPages}
-              hasPreviousPage={currentPage > 1}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              hasNextPage={pagination.hasNextPage}
+              hasPreviousPage={pagination.hasPreviousPage}
             />
           )}
         </>

@@ -121,7 +121,7 @@ const ConfirmModal = ({
                   {title}
                 </h3>
                 <div className="mt-2">
-                  <p className="text-sm text-gray-500">{message}</p>
+                  <p className="text-sm text-gray-500 break-words">{message}</p>
                 </div>
               </div>
             </div>

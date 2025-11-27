@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title: React.ReactNode
   children: React.ReactNode
   footer?: React.ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -57,8 +57,12 @@ const Modal: React.FC<ModalProps> = ({
         `}>
           <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                {title}
+              <h3 className="text-lg font-semibold leading-6 text-gray-900 pr-4 flex-1 min-w-0 flex items-center">
+                {typeof title === 'string' ? (
+                  <span className="truncate" title={title}>{title}</span>
+                ) : (
+                  title
+                )}
               </h3>
               <button
                 onClick={onClose}

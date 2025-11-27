@@ -1,5 +1,5 @@
-import { formatDistanceToNow, differenceInDays, isPast } from 'date-fns'
-import { MoreVertical, Calendar, DollarSign } from 'lucide-react'
+import { differenceInDays, isPast } from 'date-fns'
+import { MoreVertical, Calendar, DollarSign, FileText } from 'lucide-react'
 import { Subscription, Category, SubscriptionStatus } from '../../../types'
 import { getCategoryIcon, getCategoryColorStyles } from '../../../utils/categoryUtils'
 import { useState, useRef, useEffect } from 'react'
@@ -74,19 +74,36 @@ const SubscriptionCard = ({
     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
           <div className={`w-12 h-12 rounded-xl ${category ? `${categoryStyles.bg} ${categoryStyles.text}` : 'bg-gray-100 text-gray-500'} flex items-center justify-center shrink-0`}>
             <Icon size={24} />
           </div>
-          <div>
-            <h3 className="font-bold text-gray-900">{subscription.name}</h3>
-            <p className="text-sm text-gray-500">
-              {category?.name || 'Unknown'} • {subscription.frequency}
-            </p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-gray-900 truncate" title={subscription.name}>{subscription.name}</h3>
+              {subscription.notes && (
+                <div className="relative group shrink-0">
+                  <FileText size={14} className="text-gray-400 hover:text-indigo-600 cursor-help" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    {subscription.notes}
+                    {/* Arrow */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center text-sm text-gray-500 min-w-0">
+              <span className="truncate" title={category?.name || 'Unknown'}>
+                {category?.name || 'Unknown'}
+              </span>
+              <span className="whitespace-nowrap shrink-0 ml-1">
+                • {subscription.frequency}
+              </span>
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <span className={`px-2 py-1 text-xs font-bold rounded-full ${getStatusBadge()}`}>
             {subscription.status}
           </span>
@@ -207,13 +224,6 @@ const SubscriptionCard = ({
           )}
         </div>
       </div>
-
-      {/* Notes (if any) */}
-      {subscription.notes && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-500 italic">{subscription.notes}</p>
-        </div>
-      )}
     </div>
   )
 }

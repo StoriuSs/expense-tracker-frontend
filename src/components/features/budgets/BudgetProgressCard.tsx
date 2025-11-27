@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { BudgetPeriod } from '../../../types'
 import { getCategoryIcon, getCategoryColorStyles } from '../../../utils/categoryUtils'
 import { CategoryColor } from '../../../types'
@@ -36,13 +36,13 @@ const BudgetProgressCard = ({ period, categoryName, categoryColor, onClick }: Bu
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl ${categoryStyles.bg} ${categoryStyles.text} flex items-center justify-center transition-transform group-hover:scale-110`}>
+        <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
+          <div className={`w-10 h-10 rounded-xl ${categoryStyles.bg} ${categoryStyles.text} flex items-center justify-center transition-transform group-hover:scale-110 shrink-0`}>
             <Icon size={20} />
           </div>
-          <div>
-            <h4 className="font-bold text-gray-900">{categoryName}</h4>
-            <p className="text-xs text-gray-500 font-medium">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-bold text-gray-900 truncate" title={categoryName}>{categoryName}</h4>
+            <p className="text-xs text-gray-500 font-medium truncate">
               ${spentAmount.toLocaleString()} spent
             </p>
           </div>

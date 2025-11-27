@@ -20,7 +20,10 @@ import { toast } from 'react-hot-toast'
 import { Plus, Filter, X, Search, Trash2, Edit2, AlertCircle, Receipt, FileText } from 'lucide-react'
 import { getCategoryIcon, getCategoryColorStyles } from '../utils/categoryUtils'
 import ExpenseForm from '../components/features/expenses/ExpenseForm'
+import CategorySelect from '../components/common/CategorySelect'
 import { getAssetUrl } from '../utils/urlUtils'
+
+import { useDebounce } from '../hooks/useDebounce'
 
 const Expenses = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -39,6 +42,8 @@ const Expenses = () => {
   
   // Filter state
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500) // Debounce search term
+  
   const [filterCategory, setFilterCategory] = useState<string>('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -50,7 +55,7 @@ const Expenses = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 12
   
-  // Applied filters (only update on Apply click)
+  // Applied filters (only update on Apply click OR debounced search)
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
     category: '',
@@ -66,6 +71,12 @@ const Expenses = () => {
       dispatch(fetchCategories({}))
     }
   }, [dispatch, categories.length])
+
+  // Update applied filters when debounced search changes
+  useEffect(() => {
+    setAppliedFilters(prev => ({ ...prev, search: debouncedSearchTerm }))
+    setCurrentPage(1)
+  }, [debouncedSearchTerm])
 
   // Fetch expenses
   useEffect(() => {
@@ -83,7 +94,7 @@ const Expenses = () => {
 
   const handleApplyFilters = () => {
     setAppliedFilters({
-      search: searchTerm,
+      search: debouncedSearchTerm, // Use debounced term
       category: filterCategory,
       startDate,
       endDate,
@@ -149,8 +160,8 @@ const Expenses = () => {
           page: currentPage,
           limit: ITEMS_PER_PAGE
         }))
-      } catch (error) {
-        toast.error('Failed to delete expense')
+      } catch (error: any) {
+        toast.error(typeof error === 'string' ? error : 'Failed to delete expense')
       }
     }
   }
@@ -173,8 +184,8 @@ const Expenses = () => {
         page: currentPage,
         limit: ITEMS_PER_PAGE
       }))
-    } catch (error) {
-      toast.error('Failed to delete expenses')
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : 'Failed to delete expenses')
     }
   }
 
@@ -207,8 +218,8 @@ const Expenses = () => {
         page: selectedExpense ? currentPage : 1,
         limit: ITEMS_PER_PAGE
       }))
-    } catch (error) {
-      toast.error(selectedExpense ? 'Failed to update expense' : 'Failed to create expense')
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : (selectedExpense ? 'Failed to update expense' : 'Failed to create expense'))
     }
   }
 
@@ -270,7 +281,6 @@ const Expenses = () => {
               placeholder="Search by note..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleApplyFilters()}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
@@ -314,16 +324,12 @@ const Expenses = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select 
+                <CategorySelect 
+                  categories={[{ id: '', name: 'All Categories', color: 'gray' }, ...categories]}
                   value={filterCategory} 
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+                  onChange={(id) => setFilterCategory(id)}
+                  className="w-full"
+                />
               </div>
               
               <div>
@@ -455,11 +461,11 @@ const Expenses = () => {
                           />
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg ${styles.bg} ${styles.text} flex items-center justify-center`}>
+                          <div className="flex items-center gap-3 min-w-0 max-w-[200px]">
+                            <div className={`w-10 h-10 rounded-lg ${styles.bg} ${styles.text} flex items-center justify-center shrink-0`}>
                               <Icon size={20} />
                             </div>
-                            <span className="font-medium text-gray-900">{category?.name || 'Unknown'}</span>
+                            <span className="font-medium text-gray-900 truncate" title={category?.name || 'Unknown'}>{category?.name || 'Unknown'}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -469,7 +475,10 @@ const Expenses = () => {
                           <span className="text-gray-600 text-sm">{formatDate(expense.timestamp)}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-gray-600 text-sm truncate max-w-xs block">
+                          <span 
+                            className="text-gray-600 text-sm truncate max-w-xs block cursor-help"
+                            title={expense.note || ''}
+                          >
                             {expense.note || '-'}
                           </span>
                         </td>
