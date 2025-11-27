@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import categoriesService from '../../services/categoriesService'
 import { Category, CreateCategoryData, UpdateCategoryData } from '../../types'
+import { getApiErrorMessage } from '../../utils/errorUtils'
 
 interface PaginationMeta {
   currentPage: number
@@ -38,7 +39,7 @@ export const fetchCategories = createAsyncThunk(
     try {
       return await categoriesService.getAll(filters)
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch categories')
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to fetch categories'))
     }
   }
 )
@@ -49,7 +50,7 @@ export const createCategory = createAsyncThunk(
     try {
       return await categoriesService.create(data)
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create category')
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to create category'))
     }
   }
 )
@@ -60,7 +61,7 @@ export const updateCategory = createAsyncThunk(
     try {
       return await categoriesService.update(id, data)
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update category')
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to update category'))
     }
   }
 )
@@ -72,7 +73,7 @@ export const deleteCategory = createAsyncThunk(
       await categoriesService.delete(id)
       return id
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete category')
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to delete category'))
     }
   }
 )

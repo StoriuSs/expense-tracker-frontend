@@ -7,6 +7,7 @@ import usersService from '../../../services/usersService'
 import authService from '../../../services/authService'
 import toast from 'react-hot-toast'
 import { User } from '../../../types'
+import { getApiErrorMessage } from '../../../utils/errorUtils'
 
 const ProfileSettings: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -66,7 +67,7 @@ const ProfileSettings: React.FC = () => {
       
       toast.success('Avatar uploaded successfully')
     } catch (error: any) {
-      const message = error.response?.data?.meta?.message || 'Failed to upload avatar'
+      const message = getApiErrorMessage(error, 'Failed to upload avatar')
       toast.error(message)
     } finally {
       setIsUploading(false)
@@ -101,7 +102,7 @@ const ProfileSettings: React.FC = () => {
       
       toast.success('Profile updated successfully')
     } catch (error: any) {
-      const message = error.response?.data?.meta?.message || 'Failed to update profile'
+      const message = getApiErrorMessage(error, 'Failed to update profile')
       toast.error(message)
     }
   }

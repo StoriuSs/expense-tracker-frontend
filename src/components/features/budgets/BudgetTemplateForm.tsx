@@ -25,10 +25,7 @@ const BudgetTemplateForm = ({
   const [active, setActive] = useState(initialData?.active ?? true)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
-  // Filter out categories that already have a budget template (unless it's the current one being edited)
-  // This logic might need to be passed from parent or handled here if we had the list of all templates.
-  // For now, we assume the parent handles validation or we just show all.
-  // Ideally, we should disable categories that are already taken.
+  // Filter out categories that already have a budget template logic is handled by parent/validation
   
   const validate = () => {
     const newErrors: { [key: string]: string } = {}
@@ -56,10 +53,7 @@ const BudgetTemplateForm = ({
       active
     }
 
-    // Only include categoryId for new templates (it's usually not editable for existing ones to avoid confusion, or maybe it is?)
-    // The backend update DTO doesn't seem to support changing categoryId easily without checking conflicts.
-    // Let's assume for update we don't send categoryId if it's not allowed, but our type allows it.
-    // Actually, for create we need it.
+    // Only include categoryId for new templates
     if (!initialData) {
       (data as CreateBudgetTemplateData).categoryId = categoryId
     }
@@ -78,7 +72,7 @@ const BudgetTemplateForm = ({
             Category
           </label>
           {initialData ? (
-            <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 font-medium">
+            <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 font-medium truncate" title={categories.find(c => c.id === categoryId)?.name || 'Unknown Category'}>
               {categories.find(c => c.id === categoryId)?.name || 'Unknown Category'}
             </div>
           ) : (

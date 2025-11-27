@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import subscriptionsService from '../../services/subscriptionsService'
 import { Subscription, CreateSubscriptionData, UpdateSubscriptionData, SubscriptionFilter } from '../../types'
+import { getApiErrorMessage } from '../../utils/errorUtils'
 
 interface PaginationMeta {
   currentPage: number
@@ -46,33 +47,49 @@ export const fetchSubscription = createAsyncThunk(
 
 export const createSubscription = createAsyncThunk(
   'subscriptions/create',
-  async (data: CreateSubscriptionData) => {
-    const response = await subscriptionsService.create(data)
-    return response
+  async (data: CreateSubscriptionData, { rejectWithValue }) => {
+    try {
+      const response = await subscriptionsService.create(data)
+      return response
+    } catch (error: any) {
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to create subscription'))
+    }
   }
 )
 
 export const updateSubscription = createAsyncThunk(
   'subscriptions/update',
-  async ({ id, data }: { id: string; data: UpdateSubscriptionData }) => {
-    const response = await subscriptionsService.update(id, data)
-    return response
+  async ({ id, data }: { id: string; data: UpdateSubscriptionData }, { rejectWithValue }) => {
+    try {
+      const response = await subscriptionsService.update(id, data)
+      return response
+    } catch (error: any) {
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to update subscription'))
+    }
   }
 )
 
 export const deleteSubscription = createAsyncThunk(
   'subscriptions/delete',
-  async (id: string) => {
-    await subscriptionsService.delete(id)
-    return id
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await subscriptionsService.delete(id)
+      return id
+    } catch (error: any) {
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to delete subscription'))
+    }
   }
 )
 
 export const processPayment = createAsyncThunk(
   'subscriptions/processPayment',
-  async (id: string) => {
-    const response = await subscriptionsService.processPayment(id)
-    return response.subscription
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await subscriptionsService.processPayment(id)
+      return response.subscription
+    } catch (error: any) {
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to process payment'))
+    }
   }
 )
 
@@ -132,7 +149,7 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(createSubscription.rejected, (state, action) => {
         state.operationLoading = false
-        state.error = action.error.message || 'Failed to create subscription'
+        state.error = action.payload as string
       })
 
     // Update
@@ -146,7 +163,7 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(updateSubscription.rejected, (state, action) => {
         state.operationLoading = false
-        state.error = action.error.message || 'Failed to update subscription'
+        state.error = action.payload as string
       })
 
     // Delete
@@ -160,7 +177,7 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(deleteSubscription.rejected, (state, action) => {
         state.operationLoading = false
-        state.error = action.error.message || 'Failed to delete subscription'
+        state.error = action.payload as string
       })
 
     // Process Payment
@@ -178,7 +195,7 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(processPayment.rejected, (state, action) => {
         state.operationLoading = false
-        state.error = action.error.message || 'Failed to process payment'
+        state.error = action.payload as string
       })
   }
 })

@@ -12,6 +12,8 @@ import { getCategoryIcon, getCategoryColorStyles } from '../utils/categoryUtils'
 import { Plus, Trash2, Edit2, AlertCircle, Filter, X, Search } from 'lucide-react'
 import Pagination from '../components/common/Pagination'
 
+import { useDebounce } from '../hooks/useDebounce'
+
 const Categories = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { items, loading, pagination } = useSelector((state: RootState) => state.categories)
@@ -23,6 +25,8 @@ const Categories = () => {
 
   // Filter state
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500) // Debounce search term
+  
   const [filterColor, setFilterColor] = useState<CategoryColor | ''>('')
   const [minUsage, setMinUsage] = useState<string>('')
   const [maxUsage, setMaxUsage] = useState<string>('')
@@ -30,13 +34,19 @@ const Categories = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
   
-  // Applied filters (only update on Apply click)
+  // Applied filters (only update on Apply click OR debounced search)
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
     color: '' as CategoryColor | '',
     minUsage: '',
     maxUsage: ''
   })
+
+  // Update applied filters when debounced search changes
+  useEffect(() => {
+    setAppliedFilters(prev => ({ ...prev, search: debouncedSearchTerm }))
+    setCurrentPage(1)
+  }, [debouncedSearchTerm])
 
   useEffect(() => {
     // Fetch with applied filters and pagination
@@ -52,7 +62,7 @@ const Categories = () => {
 
   const handleApplyFilters = () => {
     setAppliedFilters({
-      search: searchTerm,
+      search: debouncedSearchTerm, // Use debounced term
       color: filterColor,
       minUsage,
       maxUsage
@@ -96,8 +106,9 @@ const Categories = () => {
           page: currentPage,
           limit: ITEMS_PER_PAGE
         }))
-      } catch (error) {
-        toast.error('Failed to delete category')
+      } catch (error: any) {
+        console.error('Failed to delete category:', error)
+        toast.error(typeof error === 'string' ? error : 'Failed to delete category')
       }
     }
   }
@@ -122,8 +133,9 @@ const Categories = () => {
         page: selectedCategory ? currentPage : 1, // Use page 1 for new categories
         limit: ITEMS_PER_PAGE
       }))
-    } catch (error) {
-      toast.error(selectedCategory ? 'Failed to update category' : 'Failed to create category')
+    } catch (error: any) {
+      console.error('Failed to save category:', error)
+      toast.error(typeof error === 'string' ? error : (selectedCategory ? 'Failed to update category' : 'Failed to create category'))
     }
   }
 
@@ -160,7 +172,6 @@ const Categories = () => {
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleApplyFilters()}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
@@ -385,7 +396,7 @@ const Categories = () => {
           <div>
             <h4 className="text-lg font-medium text-gray-900 mb-2">Confirm Deletion</h4>
             <p className="text-gray-600 mb-4">
-              Are you sure you want to delete <span className="font-bold text-gray-900">{items.find(i => i.id === categoryToDelete)?.name}</span>? 
+              Are you sure you want to delete <span className="font-bold text-gray-900 inline-block align-bottom max-w-[200px] truncate" title={items.find(i => i.id === categoryToDelete)?.name}>{items.find(i => i.id === categoryToDelete)?.name}</span>? 
               This action cannot be undone.
             </p>
             <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-sm text-red-700">

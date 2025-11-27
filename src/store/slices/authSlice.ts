@@ -11,23 +11,10 @@ import {
   User,
   UserResponse,
 } from '../../types'
+import { getApiErrorMessage } from '../../utils/errorUtils'
 
 // Define error type matching backend response structure
-interface ApiError {
-  response?: {
-    data?: {
-      meta?: {
-        code?: string
-        type?: string
-        message?: string
-        timestamp?: string
-        request_id?: string
-        request_duration?: number
-      }
-      data?: any
-    }
-  }
-}
+
 
 // Async thunks
 export const register = createAsyncThunk(
@@ -37,8 +24,7 @@ export const register = createAsyncThunk(
       const response = await authService.register(userData)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Registration failed'
+      const message = getApiErrorMessage(error, 'Registration failed')
       return rejectWithValue(message)
     }
   }
@@ -91,8 +77,7 @@ export const verify = createAsyncThunk<
       // For forgot password verification
       return null
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Verification failed'
+      const message = getApiErrorMessage(error, 'Verification failed')
       return rejectWithValue(message)
     }
   }
@@ -128,9 +113,7 @@ export const login = createAsyncThunk<
         accessToken: response.data.access_token,
       }
     } catch (error) {
-      const apiError = error as ApiError
-      // Backend returns: { meta: { message: "..." }, data: {...} }
-      const message = apiError.response?.data?.meta?.message || 'Invalid email or password'
+      const message = getApiErrorMessage(error, 'Invalid email or password')
       return rejectWithValue(message)
     }
   }
@@ -158,8 +141,7 @@ export const forgotPassword = createAsyncThunk(
       const response = await authService.forgotPassword(email)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Request failed'
+      const message = getApiErrorMessage(error, 'Request failed')
       return rejectWithValue(message)
     }
   }
@@ -172,8 +154,7 @@ export const resetPassword = createAsyncThunk(
       const response = await authService.resetPassword(data)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Password reset failed'
+      const message = getApiErrorMessage(error, 'Password reset failed')
       return rejectWithValue(message)
     }
   }
@@ -186,8 +167,7 @@ export const resendCode = createAsyncThunk(
       const response = await authService.resendCode(data)
       return response
     } catch (error) {
-      const apiError = error as ApiError
-      const message = apiError.response?.data?.meta?.message || 'Failed to resend code'
+      const message = getApiErrorMessage(error, 'Failed to resend code')
       return rejectWithValue(message)
     }
   }
@@ -222,8 +202,23 @@ export const restoreAuth = createAsyncThunk<
       authService.setUser(user)
       
       return { user, accessToken: token }
-    } catch (error) {
-      // If fetching profile fails (e.g. 401), clear auth
+    } catch (error: any) {
+      // If error is 401 (Unauthorized), clear auth
+      if (error.response?.status === 401) {
+        authService.clearAuth()
+        return null
+      }
+
+      // For other errors (e.g. 500, network error), try to restore from local storage
+      // This prevents logging out the user due to temporary server issues
+      const user = authService.getUser()
+      const token = authService.getAccessToken()
+      
+      if (user && token) {
+        return { user, accessToken: token }
+      }
+
+      // If no local data, clear auth
       authService.clearAuth()
       return null
     }

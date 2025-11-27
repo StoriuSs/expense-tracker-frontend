@@ -14,6 +14,8 @@ import {
 import { logout } from '../../store/slices/authSlice'
 import { AppDispatch, RootState } from '../../store'
 
+import logo from '../../assets/spending.png'
+
 const Sidebar = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
@@ -39,9 +41,7 @@ const Sidebar = () => {
       {/* Logo Area */}
       <div className="h-20 flex items-center px-8 border-b border-gray-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-            <Wallet size={24} />
-          </div>
+          <img src={logo} alt="Moneymaze Logo" className="w-10 h-10 object-contain" />
           <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
             Moneymaze
           </span>

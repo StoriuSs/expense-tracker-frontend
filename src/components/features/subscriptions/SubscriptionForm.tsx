@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
 import { Category, CreateSubscriptionData, UpdateSubscriptionData, Subscription, SubscriptionFrequency, SubscriptionStatus } from '../../../types'
+import { format } from 'date-fns'
+import CategorySelect from '../../common/CategorySelect'
 
 interface SubscriptionFormProps {
   categories: Category[]
@@ -17,11 +18,43 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
     amount: initialData?.amount || 0,
     frequency: initialData?.frequency || SubscriptionFrequency.MONTHLY,
     customInterval: initialData?.customInterval || 1,
-    nextPaymentDate: initialData?.nextPaymentDate ? initialData.nextPaymentDate.split('T')[0] : '',
+    nextPaymentDate: initialData?.nextPaymentDate 
+      ? format(new Date(initialData.nextPaymentDate), 'yyyy-MM-dd')
+      : '',
     autoCreateExpense: initialData?.autoCreateExpense ?? true,
     status: initialData?.status || SubscriptionStatus.ACTIVE,
     notes: initialData?.notes || ''
   })
+
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        categoryId: initialData.categoryId,
+        name: initialData.name,
+        amount: initialData.amount,
+        frequency: initialData.frequency,
+        customInterval: initialData.customInterval || 1,
+        nextPaymentDate: format(new Date(initialData.nextPaymentDate), 'yyyy-MM-dd'),
+        autoCreateExpense: initialData.autoCreateExpense,
+        status: initialData.status,
+        notes: initialData.notes || ''
+      })
+    } else {
+      // Reset form
+      setFormData({
+        categoryId: '',
+        name: '',
+        amount: 0,
+        frequency: SubscriptionFrequency.MONTHLY,
+        customInterval: 1,
+        nextPaymentDate: '',
+        autoCreateExpense: true,
+        status: SubscriptionStatus.ACTIVE,
+        notes: ''
+      })
+    }
+  }, [initialData])
 
   // Calculate default next payment date based on frequency
   useEffect(() => {
@@ -46,7 +79,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
       
       setFormData(prev => ({
         ...prev,
-        nextPaymentDate: nextDate.toISOString().split('T')[0]
+        nextPaymentDate: format(nextDate, 'yyyy-MM-dd')
       }))
     }
   }, [formData.frequency, formData.customInterval, initialData])
@@ -97,19 +130,11 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
         <label className="block text-sm font-bold text-gray-700 mb-2">
           Category <span className="text-red-500">*</span>
         </label>
-        <select
-          required
+        <CategorySelect
+          categories={categories}
           value={formData.categoryId}
-          onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="">Select a category</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          onChange={(id) => setFormData({ ...formData, categoryId: id })}
+        />
       </div>
 
       {/* Amount */}
