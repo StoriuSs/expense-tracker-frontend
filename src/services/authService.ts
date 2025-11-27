@@ -10,6 +10,7 @@ import {
   AuthResponseNested,
   AuthApiResponse,
   User,
+  UserResponse,
 } from '../types'
 
 class AuthService {
@@ -36,6 +37,11 @@ class AuthService {
       email: data.email,
       password: data.password,
     })
+    return response.data
+  }
+
+  async getProfile(): Promise<AuthApiResponse<UserResponse>> {
+    const response = await axiosInstance.get(API_ENDPOINTS.USERS.ME)
     return response.data
   }
 

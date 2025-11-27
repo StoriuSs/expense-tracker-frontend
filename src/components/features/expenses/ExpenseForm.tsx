@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
 import { CreateExpenseData, Expense } from '../../../types'
@@ -7,6 +7,7 @@ import Input from '../../common/Input'
 import CategorySelect from '../../common/CategorySelect'
 import { Upload, X } from 'lucide-react'
 import { getAssetUrl } from '../../../utils/urlUtils'
+import { format } from 'date-fns'
 
 interface ExpenseFormProps {
   initialData?: Expense
@@ -22,14 +23,33 @@ const ExpenseForm = ({ initialData, onSubmit, onCancel, isLoading }: ExpenseForm
   const [amount, setAmount] = useState(initialData?.amount.toString() || '')
   const [timestamp, setTimestamp] = useState(
     initialData 
-      ? new Date(initialData.timestamp).toISOString().slice(0, 16) 
-      : new Date().toISOString().slice(0, 16)
+      ? format(new Date(initialData.timestamp), "yyyy-MM-dd'T'HH:mm")
+      : format(new Date(), "yyyy-MM-dd'T'HH:mm")
   )
   const [note, setNote] = useState(initialData?.note || '')
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(initialData?.receiptUrl || null)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setCategoryId(initialData.categoryId)
+      setAmount(initialData.amount.toString())
+      setTimestamp(format(new Date(initialData.timestamp), "yyyy-MM-dd'T'HH:mm"))
+      setNote(initialData.note || '')
+      setReceiptPreview(initialData.receiptUrl || null)
+    } else {
+      // Reset form if initialData is cleared (e.g. switching from Edit to Create)
+      setCategoryId('')
+      setAmount('')
+      setTimestamp(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
+      setNote('')
+      setReceiptPreview(null)
+      setReceiptFile(null)
+    }
+  }, [initialData])
 
   const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

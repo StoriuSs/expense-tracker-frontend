@@ -68,15 +68,20 @@ export const verify = createAsyncThunk<
       if (response.data?.access_token) {
         authService.setAccessToken(response.data.access_token)
         
-        // Handle flat response structure (user data is in response.data directly, not nested)
+        // Fetch full user profile to ensure we have all details (like fullName)
+        const profileResponse = await authService.getProfile()
+        // Handle potential nested user object (e.g. data.user)
+        const profileData = profileResponse.data as any
+        const userResponse = profileData.user || profileData
+
         const user: User = {
-          id: response.data.id || '',
-          email: response.data.email,
-          fullName: response.data.full_name,
-          avatar: getAvatarUrl(response.data.avatar),
-          isVerified: true, // User is verified after successful verification
-          createdAt: response.data.created_at || new Date().toISOString(),
-          updatedAt: response.data.updated_at || new Date().toISOString(),
+          id: userResponse.id,
+          email: userResponse.email,
+          fullName: userResponse.full_name,
+          avatar: getAvatarUrl(userResponse.avatar),
+          isVerified: userResponse.is_verified,
+          createdAt: userResponse.created_at,
+          updatedAt: userResponse.updated_at,
         }
         authService.setUser(user)
         
@@ -195,13 +200,31 @@ export const restoreAuth = createAsyncThunk<
   async () => {
     try {
       const token = authService.getAccessToken()
-      const user = authService.getUser()
+      if (!token) return null
+
+      // Verify token validity and get fresh user data
+      const response = await authService.getProfile()
+      // Handle potential nested user object (e.g. data.user)
+      const profileData = response.data as any
+      const userResponse = profileData.user || profileData
       
-      if (token && user) {
-        return { user, accessToken: token }
+      const user: User = {
+          id: userResponse.id,
+          email: userResponse.email,
+          fullName: userResponse.full_name,
+          avatar: getAvatarUrl(userResponse.avatar),
+          isVerified: userResponse.is_verified,
+          createdAt: userResponse.created_at,
+          updatedAt: userResponse.updated_at,
       }
-      return null
+      
+      // Update local storage with fresh data
+      authService.setUser(user)
+      
+      return { user, accessToken: token }
     } catch (error) {
+      // If fetching profile fails (e.g. 401), clear auth
+      authService.clearAuth()
       return null
     }
   }
