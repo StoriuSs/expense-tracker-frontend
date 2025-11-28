@@ -5,9 +5,19 @@ import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import { updateSettings } from '../../../store/slices/settingsSlice'
 import SettingsSection from './SettingsSection'
 
+import toast from 'react-hot-toast'
+
 const PreferencesSettings: React.FC = () => {
   const dispatch = useAppDispatch()
   const { settings } = useSelector((state: RootState) => state.settings)
+
+  const [localStartDay, setLocalStartDay] = React.useState(settings?.budgetStartDay?.toString() || '1')
+
+  useEffect(() => {
+    if (settings?.budgetStartDay) {
+      setLocalStartDay(settings.budgetStartDay.toString())
+    }
+  }, [settings?.budgetStartDay])
 
   const handleDefaultBudgetChange = (e: React.FocusEvent<HTMLInputElement>) => {
     const value = e.target.value.trim()
@@ -19,9 +29,19 @@ const PreferencesSettings: React.FC = () => {
   }
 
   const handleBudgetStartDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value)
-    if (value >= 1 && value <= 28) {
-      dispatch(updateSettings({ budgetStartDay: value }))
+    setLocalStartDay(e.target.value)
+  }
+
+  const handleBudgetStartDayBlur = () => {
+    const value = parseInt(localStartDay)
+    if (!isNaN(value) && value >= 1 && value <= 28) {
+      if (value !== settings?.budgetStartDay) {
+        dispatch(updateSettings({ budgetStartDay: value }))
+      }
+    } else {
+      // Reset to current setting if invalid
+      toast.error('Budget start day must be between 1 and 28')
+      setLocalStartDay(settings?.budgetStartDay?.toString() || '1')
     }
   }
 
@@ -80,8 +100,9 @@ const PreferencesSettings: React.FC = () => {
             type="number"
             min="1"
             max="28"
-            value={settings?.budgetStartDay || 1}
+            value={localStartDay}
             onChange={handleBudgetStartDayChange}
+            onBlur={handleBudgetStartDayBlur}
             className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-500 mt-1">

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { format } from 'date-fns'
-import { X, Calendar, FileText, DollarSign, Loader2 } from 'lucide-react'
+import { Calendar, FileText, Loader2 } from 'lucide-react'
 import { AppDispatch, RootState } from '../../../store'
 import { fetchExpenses } from '../../../store/slices/expensesSlice'
 import { BudgetPeriod, Category } from '../../../types'

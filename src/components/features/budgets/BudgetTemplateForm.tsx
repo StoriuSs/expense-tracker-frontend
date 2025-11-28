@@ -10,6 +10,7 @@ interface BudgetTemplateFormProps {
   onSubmit: (data: CreateBudgetTemplateData | UpdateBudgetTemplateData) => Promise<void>
   onCancel: () => void
   loading?: boolean
+  defaultAmount?: number
 }
 
 const BudgetTemplateForm = ({ 
@@ -17,10 +18,11 @@ const BudgetTemplateForm = ({
   initialData, 
   onSubmit, 
   onCancel, 
-  loading = false 
+  loading = false,
+  defaultAmount = 0
 }: BudgetTemplateFormProps) => {
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '')
-  const [amount, setAmount] = useState(initialData?.monthlyAmount?.toString() || '')
+  const [amount, setAmount] = useState(initialData?.monthlyAmount?.toString() || (defaultAmount > 0 ? defaultAmount.toString() : ''))
   const [alertThreshold, setAlertThreshold] = useState(initialData?.alertThreshold || 80)
   const [active, setActive] = useState(initialData?.active ?? true)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})

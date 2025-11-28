@@ -34,16 +34,26 @@ const initialState: BudgetsState = {
   summaryLoading: false,
   operationLoading: false
 }
-
 // Async Thunks
 
 export const fetchTemplates = createAsyncThunk(
   'budgets/fetchTemplates',
-  async (_, { rejectWithValue }) => {
+  async (params: { sortBy?: string; sortOrder?: 'asc' | 'desc' } | undefined, { rejectWithValue }) => {
     try {
-      return await budgetsService.getTemplates()
+      return await budgetsService.getTemplates(params)
     } catch (error: any) {
       return rejectWithValue(getApiErrorMessage(error, 'Failed to fetch budget templates'))
+    }
+  }
+)
+
+export const fetchPeriods = createAsyncThunk(
+  'budgets/fetchPeriods',
+  async (filter: BudgetPeriodFilter, { rejectWithValue }) => {
+    try {
+      return await budgetsService.getPeriods(filter)
+    } catch (error: any) {
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to fetch budget periods'))
     }
   }
 )
@@ -78,17 +88,6 @@ export const deleteTemplate = createAsyncThunk(
       return id
     } catch (error: any) {
       return rejectWithValue(getApiErrorMessage(error, 'Failed to delete budget template'))
-    }
-  }
-)
-
-export const fetchPeriods = createAsyncThunk(
-  'budgets/fetchPeriods',
-  async (filter: BudgetPeriodFilter, { rejectWithValue }) => {
-    try {
-      return await budgetsService.getPeriods(filter)
-    } catch (error: any) {
-      return rejectWithValue(getApiErrorMessage(error, 'Failed to fetch budget periods'))
     }
   }
 )

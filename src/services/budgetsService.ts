@@ -6,15 +6,18 @@ import {
   BudgetPeriod, 
   BudgetPeriodFilter,
   CurrentMonthSummary,
-  ApiResponse 
 } from '../types'
 import { API_ENDPOINTS } from '../config/api'
 import { keysToCamelCase, keysToSnakeCase } from '../utils/caseConverter'
 
 export const budgetsService = {
   // Templates
-  getTemplates: async (): Promise<BudgetTemplate[]> => {
-    const response = await axiosInstance.get(API_ENDPOINTS.BUDGET_TEMPLATES.BASE)
+  getTemplates: async (params?: { sortBy?: string; sortOrder?: 'asc' | 'desc' }): Promise<BudgetTemplate[]> => {
+    const queryParams = new URLSearchParams()
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+
+    const response = await axiosInstance.get(`${API_ENDPOINTS.BUDGET_TEMPLATES.BASE}?${queryParams.toString()}`)
     return keysToCamelCase(response.data.data.items).map((item: any) => ({
       ...item,
       monthlyAmount: parseFloat(item.monthlyAmount)
