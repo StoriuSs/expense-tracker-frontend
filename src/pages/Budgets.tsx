@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, forwardRef } from 'react'
+import DatePicker from 'react-datepicker'
+import "react-datepicker/dist/react-datepicker.css"
 import { useDispatch, useSelector } from 'react-redux'
 import { 
   Plus, 
@@ -10,7 +12,9 @@ import {
   AlertCircle,
   Loader2,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Calendar,
+  ChevronDown
 } from 'lucide-react'
 import { AppDispatch, RootState } from '../store'
 import { 
@@ -22,6 +26,7 @@ import {
   generatePeriods,
   fetchCurrentMonthSummary 
 } from '../store/slices/budgetsSlice'
+import { fetchSettings } from '../store/slices/settingsSlice'
 import { fetchCategories } from '../store/slices/categoriesSlice'
 import BudgetProgressCard from '../components/features/budgets/BudgetProgressCard'
 import BudgetTemplateForm from '../components/features/budgets/BudgetTemplateForm'
@@ -32,6 +37,21 @@ import { CreateBudgetTemplateData, UpdateBudgetTemplateData, BudgetTemplate, Bud
 import toast from 'react-hot-toast'
 import { getCategoryIcon, getCategoryColorStyles } from '../utils/categoryUtils'
 
+// Custom Input for DatePicker
+const CustomMonthInput = forwardRef<HTMLDivElement, any>(({ onClick, value }, ref) => (
+  <div 
+    ref={ref}
+    onClick={onClick}
+    className="flex items-center gap-2 px-4 py-1.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors group"
+  >
+    <Calendar size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+    <span className="font-bold text-gray-900 min-w-[120px] text-center group-hover:text-indigo-700 transition-colors">
+      {value}
+    </span>
+    <ChevronDown size={16} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+  </div>
+))
+
 const Budgets = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { 
@@ -41,8 +61,10 @@ const Budgets = () => {
     operationLoading 
   } = useSelector((state: RootState) => state.budgets)
   const { items: categories } = useSelector((state: RootState) => state.categories)
+  const { settings } = useSelector((state: RootState) => state.settings)
 
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
+
   
   // Current Month always shows current month
   const currentMonth = new Date().toISOString().slice(0, 7)
@@ -83,8 +105,11 @@ const Budgets = () => {
   // Initial data fetch
   useEffect(() => {
     dispatch(fetchCategories())
+    if (!settings) {
+      dispatch(fetchSettings())
+    }
     // fetchTemplates is handled by the sort useEffect
-  }, [dispatch])
+  }, [dispatch, settings])
 
   // Fetch templates when sort changes
   useEffect(() => {
@@ -242,7 +267,7 @@ const Budgets = () => {
   return (
     <div className="space-y-8 pb-20">
       {/* Header - Removed as requested */}
-      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Tab Switcher */}
         <div className="bg-gray-100 p-1 rounded-xl flex items-center">
           <button
@@ -266,24 +291,48 @@ const Budgets = () => {
             History
           </button>
         </div>
+
+        {/* Current Period Date Range Display */}
+        {periods.length > 0 && (
+          <div className="flex items-center gap-2 text-sm font-medium text-indigo-900 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
+            <span className="text-indigo-400">Period:</span>
+            {new Date(periods[0].periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(periods[0].periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </div>
+        )}
       </div>
 
       {/* Month Selector (Only for History) */}
       {activeTab === 'history' && (
-        <div className="flex justify-center">
-          <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center gap-2 bg-white rounded-xl shadow-sm border border-gray-200 p-1.5">
             <button 
               onClick={() => handleMonthChange(-1)}
-              className="p-2 hover:bg-gray-50 rounded-lg text-gray-600 transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors hover:text-indigo-600"
+              title="Previous Month"
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="px-4 font-bold text-gray-900 min-w-[140px] text-center">
-              {new Date(historyMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </span>
+
+            <DatePicker
+              selected={new Date(historyMonth)}
+              onChange={(date) => {
+                if (date) {
+                  const year = date.getFullYear()
+                  const month = String(date.getMonth() + 1).padStart(2, '0')
+                  setHistoryMonth(`${year}-${month}`)
+                  setCurrentPage(1)
+                }
+              }}
+              dateFormat="MMMM yyyy"
+              showMonthYearPicker
+              customInput={<CustomMonthInput />}
+              popperClassName="z-50"
+            />
+
             <button 
               onClick={() => handleMonthChange(1)}
-              className="p-2 hover:bg-gray-50 rounded-lg text-gray-600 transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors hover:text-indigo-600"
+              title="Next Month"
             >
               <ChevronRight size={20} />
             </button>
@@ -569,6 +618,7 @@ const Budgets = () => {
                 setEditingTemplate(null)
               }}
               loading={operationLoading}
+              defaultAmount={settings?.defaultMonthlyBudget}
             />
           </Modal>
 
