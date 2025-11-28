@@ -35,8 +35,6 @@ const subscriptionsService = {
 
       const response = await axiosInstance.get(`${API_ENDPOINTS.SUBSCRIPTIONS.BASE}?${params}`)
       
-      console.log('Subscriptions API Response:', response.data)
-      
       // Backend now returns standard format: { code, type, message, data: { items, meta } }
       const data = response.data.data
       

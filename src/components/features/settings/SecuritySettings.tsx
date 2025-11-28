@@ -28,9 +28,11 @@ const SecuritySettings: React.FC = () => {
 
   const validatePassword = (password: string): string[] => {
     const errors: string[] = []
-    if (password.length < 8) errors.push('At least 8 characters')
+    if (password.length < 6) errors.push('At least 6 characters')
+    if (!/[a-z]/.test(password)) errors.push('At least one lowercase letter')
     if (!/[A-Z]/.test(password)) errors.push('At least one uppercase letter')
     if (!/[0-9]/.test(password)) errors.push('At least one number')
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) errors.push('At least one symbol (!@#$%^&*...)')
     return errors
   }
 
@@ -69,8 +71,13 @@ const SecuritySettings: React.FC = () => {
       
       // Reset form
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to change password:', error)
+      // Show backend error message for current password field if applicable
+      const errorMessage = error?.message || 'Failed to change password'
+      if (errorMessage.toLowerCase().includes('current password') || errorMessage.toLowerCase().includes('incorrect')) {
+        setErrors(prev => ({ ...prev, currentPassword: errorMessage }))
+      }
     } finally {
       setIsChangingPassword(false)
     }

@@ -39,7 +39,24 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // List of public endpoints that should NOT trigger token refresh
+    const publicEndpoints = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/verify',
+      '/auth/forgot-password',
+      '/auth/reset-password',
+      '/auth/resend-code'
+    ];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      originalRequest.url?.includes(endpoint)
+    );
+
+    // Only try to refresh token if:
+    // 1. Response is 401
+    // 2. Haven't already retried
+    // 3. NOT a public endpoint (login, register, etc.)
+    if (error.response?.status === 401 && !originalRequest._retry && !isPublicEndpoint) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
