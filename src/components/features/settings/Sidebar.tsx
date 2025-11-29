@@ -1,12 +1,11 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { User, Bell, Lock, Settings as SettingsIcon } from 'lucide-react'
+import { User, Lock, Settings as SettingsIcon } from 'lucide-react'
 
 const Sidebar: React.FC = () => {
   const navItems = [
     { to: '/settings/profile', icon: User, label: 'Profile' },
     { to: '/settings/preferences', icon: SettingsIcon, label: 'Preferences' },
-    { to: '/settings/notifications', icon: Bell, label: 'Notifications' },
     { to: '/settings/security', icon: Lock, label: 'Security' },
   ]
 
