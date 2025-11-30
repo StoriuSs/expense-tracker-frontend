@@ -27,7 +27,7 @@ import Settings from './pages/Settings'
 // Settings Pages
 import ProfileSettings from './components/features/settings/ProfileSettings'
 import PreferencesSettings from './components/features/settings/PreferencesSettings'
-import NotificationSettings from './components/features/settings/NotificationSettings'
+
 import SecuritySettings from './components/features/settings/SecuritySettings'
 
 
@@ -79,7 +79,7 @@ function App() {
             <Route index element={<Navigate to="/settings/profile" replace />} />
             <Route path="profile" element={<ProfileSettings />} />
             <Route path="preferences" element={<PreferencesSettings />} />
-            <Route path="notifications" element={<NotificationSettings />} />
+
             <Route path="security" element={<SecuritySettings />} />
           </Route>
           

@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
-import { updateSettings } from '../../../store/slices/settingsSlice'
+import { updateSettings, resetSettings } from '../../../store/slices/settingsSlice'
 import SettingsSection from './SettingsSection'
+import ConfirmModal from '../../common/ConfirmModal'
 
 import toast from 'react-hot-toast'
 
@@ -11,20 +12,32 @@ const PreferencesSettings: React.FC = () => {
   const dispatch = useAppDispatch()
   const { settings } = useSelector((state: RootState) => state.settings)
 
-  const [localStartDay, setLocalStartDay] = React.useState(settings?.budgetStartDay?.toString() || '1')
+  const [localStartDay, setLocalStartDay] = useState(settings?.budgetStartDay?.toString() || '1')
+  const [localDefaultBudget, setLocalDefaultBudget] = useState(settings?.defaultMonthlyBudget?.toString() || '')
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
 
   useEffect(() => {
-    if (settings?.budgetStartDay) {
-      setLocalStartDay(settings.budgetStartDay.toString())
+    if (settings) {
+      setLocalStartDay(settings.budgetStartDay?.toString() || '1')
+      setLocalDefaultBudget(settings.defaultMonthlyBudget?.toString() || '')
     }
-  }, [settings?.budgetStartDay])
+  }, [settings])
 
-  const handleDefaultBudgetChange = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim()
+  const handleDefaultBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalDefaultBudget(e.target.value)
+  }
+
+  const handleDefaultBudgetBlur = () => {
+    const value = localDefaultBudget.trim()
     const numValue = value === '' ? null : parseFloat(value)
     
     if (numValue === null || (numValue > 0 && !isNaN(numValue))) {
-      dispatch(updateSettings({ defaultMonthlyBudget: numValue }))
+      if (numValue !== settings?.defaultMonthlyBudget) {
+        dispatch(updateSettings({ defaultMonthlyBudget: numValue }))
+      }
+    } else {
+      // Reset to current setting if invalid
+      setLocalDefaultBudget(settings?.defaultMonthlyBudget?.toString() || '')
     }
   }
 
@@ -43,6 +56,11 @@ const PreferencesSettings: React.FC = () => {
       toast.error('Budget start day must be between 1 and 28')
       setLocalStartDay(settings?.budgetStartDay?.toString() || '1')
     }
+  }
+
+  const handleResetConfirm = async () => {
+    await dispatch(resetSettings())
+    setIsResetModalOpen(false)
   }
 
   return (
@@ -79,8 +97,9 @@ const PreferencesSettings: React.FC = () => {
               type="number"
               min="0"
               step="0.01"
-              defaultValue={settings?.defaultMonthlyBudget || ''}
-              onBlur={handleDefaultBudgetChange}
+              value={localDefaultBudget}
+              onChange={handleDefaultBudgetChange}
+              onBlur={handleDefaultBudgetBlur}
               className="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="0.00"
             />
@@ -91,7 +110,7 @@ const PreferencesSettings: React.FC = () => {
         </div>
 
         {/* Budget Start Day */}
-        <div>
+        <div className="mb-8">
           <label htmlFor="budgetStartDay" className="block text-sm font-medium text-gray-700 mb-2">
             Budget Start Day
           </label>
@@ -109,7 +128,32 @@ const PreferencesSettings: React.FC = () => {
             Your budget will reset on the <strong>{settings?.budgetStartDay || 1}th</strong> of each month
           </p>
         </div>
+
+        {/* Danger Zone */}
+        <div className="pt-6 border-t border-gray-100">
+          <h4 className="text-sm font-medium text-red-600 mb-2">Danger Zone</h4>
+          <p className="text-sm text-gray-500 mb-4">
+            Resetting your settings will revert all preferences to their default values. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => setIsResetModalOpen(true)}
+            className="px-4 py-2 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors text-sm font-medium"
+          >
+            Reset to Defaults
+          </button>
+        </div>
       </SettingsSection>
+
+      <ConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetConfirm}
+        title="Reset Settings?"
+        message="Are you sure you want to reset all your preferences to their default values? This action cannot be undone."
+        confirmText="Yes, Reset Settings"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        icon="danger"
+      />
     </div>
   )
 }
