@@ -115,8 +115,16 @@ const Subscriptions = () => {
     
     if (window.confirm(`Process payment of $${subscription.amount} for ${subscription.name}?`)) {
       try {
-        await dispatch(processPayment(id)).unwrap()
-        toast.success('Payment processed successfully')
+        const result = await dispatch(processPayment(id)).unwrap()
+        
+        if (result.budgetStatus === 'OVER_BUDGET') {
+          toast.error('Payment processed, but you have exceeded your budget!', { icon: '🚨' })
+        } else if (result.budgetStatus === 'WARNING') {
+          toast('Payment processed. You are approaching your budget limit.', { icon: '⚠️' })
+        } else {
+          toast.success('Payment processed successfully')
+        }
+        
         loadSubscriptions()
       } catch (error: any) {
         toast.error(typeof error === 'string' ? error : (error.message || 'Failed to process payment'))

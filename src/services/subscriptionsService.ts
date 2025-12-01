@@ -112,20 +112,21 @@ const subscriptionsService = {
     await axiosInstance.delete(API_ENDPOINTS.SUBSCRIPTIONS.BY_ID(id))
   },
 
-  processPayment: async (id: string): Promise<{ subscription: Subscription; expense: any }> => {
+  processPayment: async (id: string): Promise<{ subscription: Subscription; expense: any; budgetStatus: 'GOOD' | 'WARNING' | 'OVER_BUDGET' | null }> => {
     const response = await axiosInstance.post(API_ENDPOINTS.SUBSCRIPTIONS.PAY(id))
-    const data = keysToCamelCase(response.data.data)
+    const responseData = keysToCamelCase(response.data.data)
     
     return {
       subscription: {
-        ...data.subscription,
-        amount: parseFloat(data.subscription.amount),
-        nextPaymentDate: new Date(data.subscription.nextPaymentDate).toISOString(),
-        lastChargedDate: data.subscription.lastChargedDate ? new Date(data.subscription.lastChargedDate).toISOString() : null,
-        createdAt: new Date(data.subscription.createdAt).toISOString(),
-        updatedAt: new Date(data.subscription.updatedAt).toISOString()
+        ...responseData.subscription,
+        amount: parseFloat(responseData.subscription.amount),
+        nextPaymentDate: new Date(responseData.subscription.nextPaymentDate).toISOString(),
+        lastChargedDate: responseData.subscription.lastChargedDate ? new Date(responseData.subscription.lastChargedDate).toISOString() : null,
+        createdAt: new Date(responseData.subscription.createdAt).toISOString(),
+        updatedAt: new Date(responseData.subscription.updatedAt).toISOString()
       },
-      expense: data.expense
+      expense: responseData.expense,
+      budgetStatus: responseData.budgetStatus
     }
   }
 }

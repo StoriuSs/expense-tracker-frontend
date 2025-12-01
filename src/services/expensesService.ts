@@ -87,13 +87,19 @@ const expensesService = {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       
-      const expense = keysToCamelCase(response.data.data.expense)
+
+      
+      const responseData = keysToCamelCase(response.data.data)
+      const expense = responseData.expense
+      const budgetStatus = responseData.budgetStatus
+
       return {
         ...expense,
         amount: parseFloat(expense.amount),
         timestamp: new Date(expense.timestamp),
         createdAt: new Date(expense.createdAt),
-        updatedAt: new Date(expense.updatedAt)
+        updatedAt: new Date(expense.updatedAt),
+        budgetStatus
       }
     } catch (error) {
       console.error('Error creating expense:', error)
@@ -106,13 +112,17 @@ const expensesService = {
       // Send camelCase data directly as backend DTO expects camelCase properties
       const response = await axiosInstance.patch(API_ENDPOINTS.EXPENSES.BY_ID(id), data)
       
-      const expense = keysToCamelCase(response.data.data.expense)
+      const responseData = keysToCamelCase(response.data.data)
+      const expense = responseData.expense
+      const budgetStatus = responseData.budgetStatus
+
       return {
         ...expense,
         amount: parseFloat(expense.amount),
         timestamp: new Date(expense.timestamp),
         createdAt: new Date(expense.createdAt),
-        updatedAt: new Date(expense.updatedAt)
+        updatedAt: new Date(expense.updatedAt),
+        budgetStatus
       }
     } catch (error) {
       console.error('Error updating expense:', error)

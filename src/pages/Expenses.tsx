@@ -193,17 +193,31 @@ const Expenses = () => {
     try {
       if (selectedExpense) {
         // Update expense data first
-        await dispatch(updateExpense({ id: selectedExpense.id, data })).unwrap()
+        const result = await dispatch(updateExpense({ id: selectedExpense.id, data })).unwrap()
         
         // If there's a new receipt file, upload it separately
         if (receiptFile) {
           await dispatch(uploadReceipt({ id: selectedExpense.id, file: receiptFile })).unwrap()
         }
         
-        toast.success('Expense updated successfully')
+        if (result.budgetStatus === 'OVER_BUDGET') {
+          toast.error('Expense updated, but you have exceeded your budget!', { icon: '🚨' })
+        } else if (result.budgetStatus === 'WARNING') {
+          toast('Expense updated. Warning: You are approaching your budget limit.', { icon: '⚠️' })
+        } else {
+          toast.success('Expense updated successfully')
+        }
       } else {
-        await dispatch(createExpense({ data, receiptFile })).unwrap()
-        toast.success('Expense created successfully')
+        const result = await dispatch(createExpense({ data, receiptFile })).unwrap()
+        
+        if (result.budgetStatus === 'OVER_BUDGET') {
+          toast.error('Expense created, but you have exceeded your budget!', { icon: '🚨' })
+        } else if (result.budgetStatus === 'WARNING') {
+          toast('Expense created. Warning: You are approaching your budget limit.', { icon: '⚠️' })
+        } else {
+          toast.success('Expense created successfully')
+        }
+        
         setCurrentPage(1) // Reset to page 1 to see new expense
       }
       setIsModalOpen(false)

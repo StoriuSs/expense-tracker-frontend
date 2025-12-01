@@ -86,7 +86,7 @@ export const processPayment = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await subscriptionsService.processPayment(id)
-      return response.subscription
+      return response
     } catch (error: any) {
       return rejectWithValue(getApiErrorMessage(error, 'Failed to process payment'))
     }
@@ -188,9 +188,9 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(processPayment.fulfilled, (state, action) => {
         state.operationLoading = false
-        const index = state.items.findIndex(item => item.id === action.payload.id)
+        const index = state.items.findIndex(item => item.id === action.payload.subscription.id)
         if (index !== -1) {
-          state.items[index] = action.payload
+          state.items[index] = action.payload.subscription
         }
       })
       .addCase(processPayment.rejected, (state, action) => {

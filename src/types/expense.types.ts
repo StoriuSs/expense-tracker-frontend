@@ -10,6 +10,7 @@ export interface Expense {
   receiptUrl: string | null
   createdAt: Date
   updatedAt: Date
+  budgetStatus?: 'GOOD' | 'WARNING' | 'OVER_BUDGET' | null
 }
 
 export interface CreateExpenseData {
