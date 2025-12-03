@@ -35,7 +35,7 @@ const Dashboard = () => {
     const last30DaysStart = subDays(new Date(), 30).toISOString().split('T')[0]
     const today = new Date().toISOString().split('T')[0]
 
-    dispatch(fetchCategories())
+    dispatch(fetchCategories({ limit: 1000 })) // Load all categories
     dispatch(fetchSummary({ startDate: thisMonth.startDate, endDate: thisMonth.endDate }))
     dispatch(fetchTrend({ startDate: last30DaysStart, endDate: today, granularity: 'day' }))
     dispatch(fetchBudgetHealth())

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Calendar, FileText, Loader2 } from 'lucide-react'
+import { Calendar, FileText, Loader2, ExternalLink } from 'lucide-react'
 import { AppDispatch, RootState } from '../../../store'
 import { fetchExpenses } from '../../../store/slices/expensesSlice'
 import { BudgetPeriod, Category } from '../../../types'
@@ -16,6 +17,7 @@ interface BudgetExpensesModalProps {
 
 const BudgetExpensesModal = ({ isOpen, onClose, period, category }: BudgetExpensesModalProps) => {
   const dispatch = useDispatch<AppDispatch>()
+  const navigate = useNavigate()
   const { items: expenses, loading } = useSelector((state: RootState) => state.expenses)
 
   useEffect(() => {
@@ -28,6 +30,20 @@ const BudgetExpensesModal = ({ isOpen, onClose, period, category }: BudgetExpens
       }))
     }
   }, [isOpen, period, dispatch])
+
+  const handleViewAllExpenses = () => {
+    if (!period) return
+    
+    // Navigate to Expenses page with pre-filled filters
+    const params = new URLSearchParams({
+      categoryId: period.categoryId,
+      startDate: period.periodStart,
+      endDate: period.periodEnd
+    })
+    
+    navigate(`/expenses?${params.toString()}`)
+    onClose()
+  }
 
   if (!period) return null
 
@@ -44,17 +60,28 @@ const BudgetExpensesModal = ({ isOpen, onClose, period, category }: BudgetExpens
     >
       <div className="space-y-4">
         {/* Header Info */}
-        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-500">Period</p>
-            <p className="font-medium text-gray-900">
-              {format(new Date(period.periodStart), 'MMM d')} - {format(new Date(period.periodEnd), 'MMM d, yyyy')}
-            </p>
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <div className="flex justify-between items-center mb-3">
+            <div>
+              <p className="text-sm text-gray-500">Period</p>
+              <p className="font-medium text-gray-900">
+                {format(new Date(period.periodStart), 'MMM d')} - {format(new Date(period.periodEnd), 'MMM d, yyyy')}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Total Spent</p>
+              <p className="font-bold text-lg text-gray-900">${period.spentAmount.toLocaleString()}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Total Spent</p>
-            <p className="font-bold text-lg text-gray-900">${period.spentAmount.toLocaleString()}</p>
-          </div>
+          
+          {/* View All Button */}
+          <button
+            onClick={handleViewAllExpenses}
+            className="w-full mt-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <ExternalLink size={16} />
+            View All in Expenses Page
+          </button>
         </div>
 
         {/* Expenses List */}

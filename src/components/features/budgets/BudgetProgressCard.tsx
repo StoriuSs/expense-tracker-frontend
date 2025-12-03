@@ -43,7 +43,7 @@ const BudgetProgressCard = ({ period, categoryName, categoryColor, onClick }: Bu
           <div className="min-w-0 flex-1">
             <h4 className="font-bold text-gray-900 truncate" title={categoryName}>{categoryName}</h4>
             <p className="text-xs text-gray-500 font-medium truncate">
-              ${spentAmount.toLocaleString()} spent
+              ${spentAmount.toLocaleString()} spent • {period.expenseCount} transactions
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import { AppDispatch, RootState } from '../store'
 import { 
   fetchExpenses, 
@@ -27,6 +28,7 @@ import { useDebounce } from '../hooks/useDebounce'
 
 const Expenses = () => {
   const dispatch = useDispatch<AppDispatch>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { items, loading, pagination } = useSelector((state: RootState) => state.expenses)
   const { items: categories } = useSelector((state: RootState) => state.categories)
   
@@ -65,12 +67,51 @@ const Expenses = () => {
     maxAmount: ''
   })
 
-  // Fetch categories on mount
+  // Initialize filters from URL params on mount
   useEffect(() => {
-    if (categories.length === 0) {
-      dispatch(fetchCategories({}))
+    const categoryId = searchParams.get('categoryId')
+    const startDateParam = searchParams.get('startDate')
+    const endDateParam = searchParams.get('endDate')
+
+    if (categoryId || startDateParam || endDateParam) {
+      // Convert ISO strings to datetime-local format (YYYY-MM-DDTHH:mm)
+      const formatForDatetimeLocal = (isoString: string) => {
+        const date = new Date(isoString)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        return `${year}-${month}-${day}T${hours}:${minutes}`
+      }
+
+      // Set filter state
+      if (categoryId) setFilterCategory(categoryId)
+      if (startDateParam) setStartDate(formatForDatetimeLocal(startDateParam))
+      if (endDateParam) setEndDate(formatForDatetimeLocal(endDateParam))
+
+      // Apply filters immediately
+      setAppliedFilters({
+        search: '',
+        category: categoryId || '',
+        startDate: startDateParam || '',
+        endDate: endDateParam || '',
+        minAmount: '',
+        maxAmount: ''
+      })
+
+      // Show filters panel if any filter is set
+      setShowFilters(true)
+
+      // Clear params from URL after applying
+      setSearchParams({})
     }
-  }, [dispatch, categories.length])
+  }, []) // Only run on mount
+
+  // Fetch categories on mount (load all for filter dropdown)
+  useEffect(() => {
+    dispatch(fetchCategories({ limit: 1000 })) // Always load all categories for dropdowns
+  }, [dispatch])
 
   // Update applied filters when debounced search changes
   useEffect(() => {
@@ -193,17 +234,31 @@ const Expenses = () => {
     try {
       if (selectedExpense) {
         // Update expense data first
-        await dispatch(updateExpense({ id: selectedExpense.id, data })).unwrap()
+        const result = await dispatch(updateExpense({ id: selectedExpense.id, data })).unwrap()
         
         // If there's a new receipt file, upload it separately
         if (receiptFile) {
           await dispatch(uploadReceipt({ id: selectedExpense.id, file: receiptFile })).unwrap()
         }
         
-        toast.success('Expense updated successfully')
+        if (result.budgetStatus === 'OVER_BUDGET') {
+          toast.error('Expense updated, but you have exceeded your budget!', { icon: '🚨' })
+        } else if (result.budgetStatus === 'WARNING') {
+          toast('Expense updated. Warning: You are approaching your budget limit.', { icon: '⚠️' })
+        } else {
+          toast.success('Expense updated successfully')
+        }
       } else {
-        await dispatch(createExpense({ data, receiptFile })).unwrap()
-        toast.success('Expense created successfully')
+        const result = await dispatch(createExpense({ data, receiptFile })).unwrap()
+        
+        if (result.budgetStatus === 'OVER_BUDGET') {
+          toast.error('Expense created, but you have exceeded your budget!', { icon: '🚨' })
+        } else if (result.budgetStatus === 'WARNING') {
+          toast('Expense created. Warning: You are approaching your budget limit.', { icon: '⚠️' })
+        } else {
+          toast.success('Expense created successfully')
+        }
+        
         setCurrentPage(1) // Reset to page 1 to see new expense
       }
       setIsModalOpen(false)

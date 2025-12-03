@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { register as registerUser, clearError } from '../../store/slices/authSlice'
 import { RootState, AppDispatch } from '../../store'
 
@@ -16,6 +17,8 @@ const Register = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const { isLoading, pendingVerification } = useSelector((state: RootState) => state.auth)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
@@ -92,32 +95,41 @@ const Register = () => {
           <label htmlFor="password" className="label">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            className={`input ${errors.password ? 'input-error' : ''}`}
-            placeholder="Create a strong password"
-            {...register('password', {
-              required: 'Password is required',
-              minLength: {
-                value: 6,
-                message: 'Password must be at least 6 characters',
-              },
-              validate: (value) => {
-                const hasLowerCase = /[a-z]/.test(value)
-                const hasUpperCase = /[A-Z]/.test(value)
-                const hasNumber = /\d/.test(value)
-                const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(value)
-                
-                if (!hasLowerCase) return 'Password must contain at least one lowercase letter'
-                if (!hasUpperCase) return 'Password must contain at least one uppercase letter'
-                if (!hasNumber) return 'Password must contain at least one number'
-                if (!hasSymbol) return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
-                
-                return true
-              },
-            })}
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={`input ${errors.password ? 'input-error' : ''}`}
+              placeholder="Create a strong password"
+              {...register('password', {
+                required: 'Password is required',
+                minLength: {
+                  value: 6,
+                  message: 'Password must be at least 6 characters',
+                },
+                validate: (value) => {
+                  const hasLowerCase = /[a-z]/.test(value)
+                  const hasUpperCase = /[A-Z]/.test(value)
+                  const hasNumber = /\d/.test(value)
+                  const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':'"\\|,.<>\/?~`]/.test(value)
+                  
+                  if (!hasLowerCase) return 'Password must contain at least one lowercase letter'
+                  if (!hasUpperCase) return 'Password must contain at least one uppercase letter'
+                  if (!hasNumber) return 'Password must contain at least one number'
+                  if (!hasSymbol) return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
+                  
+                  return true
+                },
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {errors.password && (
             <p className="error-text">{errors.password.message}</p>
           )}
@@ -127,17 +139,26 @@ const Register = () => {
           <label htmlFor="confirmPassword" className="label">
             Confirm Password
           </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
-            placeholder="Re-enter your password"
-            {...register('confirmPassword', {
-              required: 'Please confirm your password',
-              validate: (value) =>
-                value === password || 'Passwords do not match',
-            })}
-          />
+          <div className="relative">
+            <input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
+              placeholder="Re-enter your password"
+              {...register('confirmPassword', {
+                required: 'Please confirm your password',
+                validate: (value) =>
+                  value === password || 'Passwords do not match',
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {errors.confirmPassword && (
             <p className="error-text">{errors.confirmPassword.message}</p>
           )}
