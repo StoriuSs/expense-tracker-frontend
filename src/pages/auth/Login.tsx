@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { login, clearError } from '../../store/slices/authSlice'
 import { RootState, AppDispatch } from '../../store'
 import { LoginCredentials } from '../../types'
@@ -10,6 +11,7 @@ const Login = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const { isLoading, isAuthenticated } = useSelector((state: RootState) => state.auth)
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -61,15 +63,24 @@ const Login = () => {
           <label htmlFor="password" className="label">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            className={`input ${errors.password ? 'input-error' : ''}`}
-            placeholder="Enter your password"
-            {...register('password', {
-              required: 'Password is required',
-            })}
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              className={`input ${errors.password ? 'input-error' : ''}`}
+              placeholder="Enter your password"
+              {...register('password', {
+                required: 'Password is required',
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {errors.password && (
             <p className="error-text">{errors.password.message}</p>
           )}

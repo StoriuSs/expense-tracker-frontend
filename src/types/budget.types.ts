@@ -23,6 +23,7 @@ export interface BudgetPeriod {
   alertThreshold: number | null
   createdAt: string
   updatedAt: string
+  expenseCount: number
 }
 
 export interface CreateBudgetTemplateData {

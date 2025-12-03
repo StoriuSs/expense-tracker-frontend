@@ -104,7 +104,7 @@ const Budgets = () => {
 
   // Initial data fetch
   useEffect(() => {
-    dispatch(fetchCategories())
+    dispatch(fetchCategories({ limit: 1000 })) // Always load all categories for dropdowns
     if (!settings) {
       dispatch(fetchSettings())
     }

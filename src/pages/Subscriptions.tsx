@@ -63,9 +63,9 @@ const Subscriptions = () => {
     loadSubscriptions()
   }, [dispatch, currentPage, activeStatusFilter, categoryFilter, sortBy, sortOrder, debouncedSearchQuery]) // Add debouncedSearchQuery to dependencies
 
-  // Fetch categories on mount
+  // Fetch categories on mount (load all for dropdown)
   useEffect(() => {
-    dispatch(fetchCategories())
+    dispatch(fetchCategories({ limit: 1000 })) // Always load all categories
   }, [dispatch])
 
   // Handlers
