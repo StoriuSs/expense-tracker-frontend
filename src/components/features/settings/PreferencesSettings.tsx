@@ -110,7 +110,7 @@ const PreferencesSettings: React.FC = () => {
         </div>
 
         {/* Budget Start Day */}
-        <div className="mb-8">
+        <div className="mb-6">
           <label htmlFor="budgetStartDay" className="block text-sm font-medium text-gray-700 mb-2">
             Budget Start Day
           </label>
@@ -127,6 +127,32 @@ const PreferencesSettings: React.FC = () => {
           <p className="text-xs text-gray-500 mt-1">
             Your budget will reset on the <strong>{settings?.budgetStartDay || 1}th</strong> of each month
           </p>
+        </div>
+
+        {/* Budget Alert */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <label htmlFor="budgetAlert" className="block text-sm font-medium text-gray-700">
+                Budget Email Alerts
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Receive email notifications when you reach 80% or exceed your budget
+              </p>
+            </div>
+            <button
+              onClick={() => dispatch(updateSettings({ budgetAlert: !settings?.budgetAlert }))}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                settings?.budgetAlert ? 'bg-indigo-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  settings?.budgetAlert ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Danger Zone */}
