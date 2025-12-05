@@ -25,6 +25,7 @@ export interface UpdateExpenseData {
   amount?: number
   timestamp?: string
   note?: string
+  removeReceipt?: boolean
 }
 
 export interface ExpenseFilter extends PaginationQuery {
