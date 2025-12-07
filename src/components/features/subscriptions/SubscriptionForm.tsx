@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Category, CreateSubscriptionData, UpdateSubscriptionData, Subscription, SubscriptionFrequency, SubscriptionStatus } from '../../../types'
+import {
+  Category,
+  CreateSubscriptionData,
+  UpdateSubscriptionData,
+  Subscription,
+  SubscriptionFrequency,
+  SubscriptionStatus,
+} from '../../../types'
 import { format } from 'date-fns'
 import CategorySelect from '../../common/CategorySelect'
 
@@ -11,19 +18,25 @@ interface SubscriptionFormProps {
   loading?: boolean
 }
 
-const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading }: SubscriptionFormProps) => {
+const SubscriptionForm = ({
+  categories,
+  initialData,
+  onSubmit,
+  onCancel,
+  loading,
+}: SubscriptionFormProps) => {
   const [formData, setFormData] = useState({
     categoryId: initialData?.categoryId || '',
     name: initialData?.name || '',
     amount: initialData?.amount || 0,
     frequency: initialData?.frequency || SubscriptionFrequency.MONTHLY,
     customInterval: initialData?.customInterval || 1,
-    nextPaymentDate: initialData?.nextPaymentDate 
+    nextPaymentDate: initialData?.nextPaymentDate
       ? format(new Date(initialData.nextPaymentDate), 'yyyy-MM-dd')
       : '',
     autoCreateExpense: initialData?.autoCreateExpense ?? true,
     status: initialData?.status || SubscriptionStatus.ACTIVE,
-    notes: initialData?.notes || ''
+    notes: initialData?.notes || '',
   })
 
   // Update form when initialData changes
@@ -38,7 +51,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
         nextPaymentDate: format(new Date(initialData.nextPaymentDate), 'yyyy-MM-dd'),
         autoCreateExpense: initialData.autoCreateExpense,
         status: initialData.status,
-        notes: initialData.notes || ''
+        notes: initialData.notes || '',
       })
     } else {
       // Reset form
@@ -51,7 +64,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
         nextPaymentDate: '',
         autoCreateExpense: true,
         status: SubscriptionStatus.ACTIVE,
-        notes: ''
+        notes: '',
       })
     }
   }, [initialData])
@@ -61,7 +74,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
     if (!initialData && !formData.nextPaymentDate) {
       const today = new Date()
       let nextDate = new Date(today)
-      
+
       switch (formData.frequency) {
         case SubscriptionFrequency.WEEKLY:
           nextDate.setDate(today.getDate() + 7)
@@ -76,17 +89,17 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
           nextDate.setMonth(today.getMonth() + (formData.customInterval || 1))
           break
       }
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        nextPaymentDate: format(nextDate, 'yyyy-MM-dd')
+        nextPaymentDate: format(nextDate, 'yyyy-MM-dd'),
       }))
     }
   }, [formData.frequency, formData.customInterval, initialData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const submitData: any = {
       categoryId: formData.categoryId,
       name: formData.name,
@@ -94,7 +107,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
       frequency: formData.frequency,
       nextPaymentDate: formData.nextPaymentDate,
       autoCreateExpense: formData.autoCreateExpense,
-      status: formData.status
+      status: formData.status,
     }
 
     if (formData.frequency === SubscriptionFrequency.CUSTOM) {
@@ -166,7 +179,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
             { value: SubscriptionFrequency.WEEKLY, label: 'Weekly' },
             { value: SubscriptionFrequency.MONTHLY, label: 'Monthly' },
             { value: SubscriptionFrequency.YEARLY, label: 'Yearly' },
-            { value: SubscriptionFrequency.CUSTOM, label: 'Custom' }
+            { value: SubscriptionFrequency.CUSTOM, label: 'Custom' },
           ].map((freq) => (
             <button
               key={freq.value}
@@ -188,7 +201,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
       {formData.frequency === SubscriptionFrequency.CUSTOM && (
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2">
-            Custom Interval (months) <span className="text-red-500">*</span>
+            Custom Interval (days) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -235,12 +248,12 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
 
       {/* Status */}
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-2">
-          Status
-        </label>
+        <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
         <select
           value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value as SubscriptionStatus })}
+          onChange={(e) =>
+            setFormData({ ...formData, status: e.target.value as SubscriptionStatus })
+          }
           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <option value={SubscriptionStatus.ACTIVE}>Active</option>
@@ -251,9 +264,7 @@ const SubscriptionForm = ({ categories, initialData, onSubmit, onCancel, loading
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-2">
-          Notes
-        </label>
+        <label className="block text-sm font-bold text-gray-700 mb-2">Notes</label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
