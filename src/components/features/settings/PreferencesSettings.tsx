@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import { updateSettings, resetSettings } from '../../../store/slices/settingsSlice'
+import { fetchPeriods, fetchCurrentMonthSummary } from '../../../store/slices/budgetsSlice'
 import SettingsSection from './SettingsSection'
 import ConfirmModal from '../../common/ConfirmModal'
-
+import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
 const PreferencesSettings: React.FC = () => {
@@ -29,14 +30,27 @@ const PreferencesSettings: React.FC = () => {
 
   const handleDefaultBudgetBlur = () => {
     const value = localDefaultBudget.trim()
-    const numValue = value === '' ? null : parseFloat(value)
     
-    if (numValue === null || (numValue > 0 && !isNaN(numValue))) {
+    // Empty is valid (null)
+    if (value === '') {
+      if (settings?.defaultMonthlyBudget !== null) {
+        dispatch(updateSettings({ defaultMonthlyBudget: null }))
+      }
+      return
+    }
+    
+    // Check if entire string is a valid positive number
+    // Regex: optional digits, optional decimal point, optional digits after decimal
+    const isValidNumber = /^\d+(\.\d+)?$/.test(value)
+    const numValue = parseFloat(value)
+    
+    if (isValidNumber && numValue > 0 && !isNaN(numValue)) {
       if (numValue !== settings?.defaultMonthlyBudget) {
         dispatch(updateSettings({ defaultMonthlyBudget: numValue }))
       }
     } else {
-      // Reset to current setting if invalid
+      // Show error and reset to current setting
+      toast.error('Default budget must be a valid positive number')
       setLocalDefaultBudget(settings?.defaultMonthlyBudget?.toString() || '')
     }
   }
@@ -59,8 +73,15 @@ const PreferencesSettings: React.FC = () => {
   }
 
   const handleResetConfirm = async () => {
-    await dispatch(resetSettings())
+    const result = await dispatch(resetSettings())
     setIsResetModalOpen(false)
+    
+    // If reset was successful, refetch budget data to reflect new budgetStartDay
+    if (resetSettings.fulfilled.match(result)) {
+      const currentMonth = format(new Date(), 'yyyy-MM')
+      dispatch(fetchPeriods({ month: currentMonth }))
+      dispatch(fetchCurrentMonthSummary())
+    }
   }
 
   return (
@@ -94,9 +115,8 @@ const PreferencesSettings: React.FC = () => {
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
             <input
               id="defaultBudget"
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={localDefaultBudget}
               onChange={handleDefaultBudgetChange}
               onBlur={handleDefaultBudgetBlur}
