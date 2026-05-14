@@ -12,7 +12,7 @@ Moneymaze is a modern, comprehensive personal finance management application des
 - **Settings**: Customizable preferences (currency, budget start day, etc.) with a "Reset to Defaults" option.
 
 ### 📊 Dashboard
-- **Overview**: At-a-glance view of total balance, monthly spending, and budget health.
+- **Overview**: At-a-glance view of total balance, monthly spendings, and budget health.
 - **Recent Transactions**: Quick access to the latest expenses.
 - **Budget Health**: Visual indicators (Good, Warning, Over Budget) for current budget periods.
 - **Statistics**: Interactive charts using `recharts` to visualize spending trends and category breakdowns.

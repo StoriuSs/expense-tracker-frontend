@@ -17,7 +17,9 @@ interface VerifyFormData {
 const Verify = () => {
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
-  const { isLoading, pendingVerification, isAuthenticated } = useSelector((state: RootState) => state.auth)
+  const { isLoading, pendingVerification, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  )
   const [canResend, setCanResend] = useState(false)
   const [countdown, setCountdown] = useState(60)
 
@@ -43,7 +45,7 @@ const Verify = () => {
     if (pendingVerification.sentAt) {
       const elapsedSeconds = Math.floor((Date.now() - pendingVerification.sentAt) / 1000)
       const remainingSeconds = Math.max(0, 60 - elapsedSeconds)
-      
+
       if (remainingSeconds > 0) {
         setCountdown(remainingSeconds)
         setCanResend(false)

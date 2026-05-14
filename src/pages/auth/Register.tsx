@@ -45,7 +45,7 @@ const Register = () => {
   return (
     <div className="card">
       <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="fullName" className="label">
@@ -64,9 +64,7 @@ const Register = () => {
               },
             })}
           />
-          {errors.fullName && (
-            <p className="error-text">{errors.fullName.message}</p>
-          )}
+          {errors.fullName && <p className="error-text">{errors.fullName.message}</p>}
         </div>
 
         <div>
@@ -86,9 +84,7 @@ const Register = () => {
               },
             })}
           />
-          {errors.email && (
-            <p className="error-text">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="error-text">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -112,12 +108,13 @@ const Register = () => {
                   const hasUpperCase = /[A-Z]/.test(value)
                   const hasNumber = /\d/.test(value)
                   const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':'"\\|,.<>\/?~`]/.test(value)
-                  
+
                   if (!hasLowerCase) return 'Password must contain at least one lowercase letter'
                   if (!hasUpperCase) return 'Password must contain at least one uppercase letter'
                   if (!hasNumber) return 'Password must contain at least one number'
-                  if (!hasSymbol) return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
-                  
+                  if (!hasSymbol)
+                    return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
+
                   return true
                 },
               })}
@@ -130,9 +127,7 @@ const Register = () => {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {errors.password && (
-            <p className="error-text">{errors.password.message}</p>
-          )}
+          {errors.password && <p className="error-text">{errors.password.message}</p>}
         </div>
 
         <div>
@@ -147,8 +142,7 @@ const Register = () => {
               placeholder="Re-enter your password"
               {...register('confirmPassword', {
                 required: 'Please confirm your password',
-                validate: (value) =>
-                  value === password || 'Passwords do not match',
+                validate: (value) => value === password || 'Passwords do not match',
               })}
             />
             <button
@@ -159,9 +153,7 @@ const Register = () => {
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {errors.confirmPassword && (
-            <p className="error-text">{errors.confirmPassword.message}</p>
-          )}
+          {errors.confirmPassword && <p className="error-text">{errors.confirmPassword.message}</p>}
         </div>
 
         <button
@@ -176,10 +168,7 @@ const Register = () => {
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Already have an account?{' '}
-          <Link
-            to="/login"
-            className="text-primary-600 hover:text-primary-700 font-medium"
-          >
+          <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
             Sign in
           </Link>
         </p>

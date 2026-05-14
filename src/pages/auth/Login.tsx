@@ -35,7 +35,7 @@ const Login = () => {
   return (
     <div className="card">
       <h2 className="text-2xl font-bold text-center mb-6">Welcome Back</h2>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="email" className="label">
@@ -54,9 +54,7 @@ const Login = () => {
               },
             })}
           />
-          {errors.email && (
-            <p className="error-text">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="error-text">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -81,16 +79,11 @@ const Login = () => {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {errors.password && (
-            <p className="error-text">{errors.password.message}</p>
-          )}
+          {errors.password && <p className="error-text">{errors.password.message}</p>}
         </div>
 
         <div className="flex items-center justify-end">
-          <Link
-            to="/forgot-password"
-            className="text-sm text-primary-600 hover:text-primary-700"
-          >
+          <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
             Forgot password?
           </Link>
         </div>
@@ -107,10 +100,7 @@ const Login = () => {
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link
-            to="/register"
-            className="text-primary-600 hover:text-primary-700 font-medium"
-          >
+          <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
             Sign up
           </Link>
         </p>

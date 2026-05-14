@@ -45,10 +45,12 @@ const ResetPassword = () => {
       return
     }
 
-    const result = await dispatch(resetPassword({
-      code: pendingVerification.code,
-      newPassword: data.newPassword,
-    }))
+    const result = await dispatch(
+      resetPassword({
+        code: pendingVerification.code,
+        newPassword: data.newPassword,
+      })
+    )
 
     if (result.type === 'auth/resetPassword/fulfilled') {
       dispatch(clearPendingVerification())
@@ -73,13 +75,10 @@ const ResetPassword = () => {
           <span className="text-3xl">🔑</span>
         </div>
         <h2 className="text-2xl font-bold mb-2">Reset Password</h2>
-        <p className="text-gray-600">
-          Enter your new password
-        </p>
+        <p className="text-gray-600">Enter your new password</p>
       </div>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="newPassword" className="label">
             New Password
@@ -101,12 +100,13 @@ const ResetPassword = () => {
                   const hasUpperCase = /[A-Z]/.test(value)
                   const hasNumber = /\d/.test(value)
                   const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':'"\\|,.<>\/?~`]/.test(value)
-                  
+
                   if (!hasLowerCase) return 'Password must contain at least one lowercase letter'
                   if (!hasUpperCase) return 'Password must contain at least one uppercase letter'
                   if (!hasNumber) return 'Password must contain at least one number'
-                  if (!hasSymbol) return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
-                  
+                  if (!hasSymbol)
+                    return 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{};\':"\\|,.<>/?~`)'
+
                   return true
                 },
               })}
@@ -136,8 +136,7 @@ const ResetPassword = () => {
               placeholder="Re-enter your new password"
               {...register('confirmPassword', {
                 required: 'Please confirm your password',
-                validate: (value) =>
-                  value === password || 'Passwords do not match',
+                validate: (value) => value === password || 'Passwords do not match',
               })}
             />
             <button
@@ -163,10 +162,7 @@ const ResetPassword = () => {
       </form>
 
       <div className="mt-6 text-center">
-        <button
-          onClick={handleGoBack}
-          className="text-sm text-gray-600 hover:text-gray-800"
-        >
+        <button onClick={handleGoBack} className="text-sm text-gray-600 hover:text-gray-800">
           ← Back to verification
         </button>
       </div>

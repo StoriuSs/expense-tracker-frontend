@@ -44,7 +44,7 @@ const ForgotPassword = () => {
           Enter your email and we'll send you a code to reset your password
         </p>
       </div>
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="email" className="label">
@@ -63,9 +63,7 @@ const ForgotPassword = () => {
               },
             })}
           />
-          {errors.email && (
-            <p className="error-text">{errors.email.message as string}</p>
-          )}
+          {errors.email && <p className="error-text">{errors.email.message as string}</p>}
         </div>
 
         <button
@@ -78,10 +76,7 @@ const ForgotPassword = () => {
       </form>
 
       <div className="mt-6 text-center">
-        <Link
-          to="/login"
-          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-        >
+        <Link to="/login" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
           ← Back to login
         </Link>
       </div>
