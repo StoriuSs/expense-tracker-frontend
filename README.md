@@ -49,7 +49,7 @@ Moneymaze is a modern, comprehensive personal finance management application des
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Node.js (v18+ recommended)
+- Node.js (v20+ recommended)
 - npm or yarn
 - Backend server running (typically on port 9000)
 
